@@ -20,4 +20,12 @@ describe('cometDom', () => {
     cometDom.insertPrompt('hello')
     expect(document.querySelector('#ask-input')?.textContent).toBe('hello')
   })
+
+  it('reads timeline items', () => {
+    document.body.innerHTML = `
+      <div role="listitem" class="group/goal" id="a">step 1</div>
+      <div role="listitem" class="group/goal" id="b">step 2</div>
+    `
+    expect(cometDom.getTimeline()).toEqual(['step 1', 'step 2'])
+  })
 })

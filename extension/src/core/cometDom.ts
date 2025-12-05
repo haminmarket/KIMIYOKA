@@ -14,8 +14,9 @@ export interface CometDom {
 
 const INPUT_SELECTOR = '#ask-input[role="textbox"][contenteditable="true"]'
 const SUBMIT_SELECTOR = 'button[data-testid="submit-button"]'
-const TIMELINE_SELECTOR = 'div[role="listitem"].group/goal'
-const FINAL_GOAL_SELECTOR = 'div[role="listitem"].group/goal#final-goal'
+// Use attribute contains selector to avoid CSS escape issues with class "group/goal"
+const TIMELINE_SELECTOR = 'div[role="listitem"][class*="group/goal"]'
+const FINAL_GOAL_SELECTOR = 'div[role="listitem"]#final-goal'
 
 export const cometDom: CometDom = {
   isOpen() {
