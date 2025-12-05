@@ -66,15 +66,15 @@
 
 9) 스모크 테스트 상태 (필수)
 - 실행 결과 (2025-12-05):
-  - anon REST `/workflows?select=id,title,domain,plan&limit=5` → 응답 200, 결과 `[]` (RLS로 인해 비인증 조회 불가 추정)
-  - 테스트 계정 생성 시도: `codexsmoke1234@proton.me` (signUp 200 성공, email 미확인 상태)
-  - sign-in 실패: `email_not_confirmed` (이메일 확인 필수). 서비스 롤 키 없으므로 admin create/confirm 불가.
-  - 따라서 인증 토큰을 확보하지 못해 logs insert/update 스모크는 미실행 상태.
+  - anon REST `/workflows?select=id,title,domain,plan&limit=5` → 응답 200, 결과 `[]` (비인증 읽기 불가)
+  - 테스트 계정 생성/로그인: `codexsmoke5678@proton.me` (email 확인 요구 해제 후 signUp 시 access_token 발급, user_id=`d48922a6-028d-411e-874b-6f839a9b4de7`)
+  - workflows 조회 (auth) 성공: 2건 확인 (YouTube/Notion)
+  - logs insert (status='started') 성공: id=`2b7183a1-1d25-4ea0-ae12-7bb5015bd609`
+  - logs update(status='success', meta 확장) 시도 → 200 응답이나 row 미변경 (RLS 정책에 update 허용 없음 추정)
 - 다음 조치 옵션:
-  1) 서비스 롤 키 제공 후 `auth.admin.createUser`로 이메일 확인된 테스트 계정 생성
-  2) 대시보드에서 “이메일 확인 요구”를 임시 해제 후 signIn으로 토큰 발급 → 테스트 완료 후 다시 켜기
-  3) 메일박스 접근이 가능하다면 signUp 확인 메일을 클릭해 토큰 확보
-- 실행 방법: `scripts/sql/supabase_smoke.sql` 참고 (psql에서 변수만 교체)
+  1) logs 테이블에 "자신의 행 update 허용" RLS 정책 추가, 또는 status 전환을 insert로만 처리하도록 앱/문서 수정
+  2) (선택) 서비스 롤로 admin update로 status 전환 테스트
+  3) 추가 스모크 시 `scripts/sql/supabase_smoke.sql` 사용 (auth 토큰으로 실행)
 
 ## 남은 작업 및 우선순위
 - Edge Functions 동기화 (높음): `extension-log-ingest`, `extension-check-license` 응답/검증 로직이 status/meta 스펙을 따르는지 확인하고 필요 시 수정.
