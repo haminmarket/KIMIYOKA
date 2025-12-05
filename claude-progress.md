@@ -228,6 +228,98 @@ Each session entry should include:
 
 ---
 
+## 2025-12-05 (Fourth Session)
+
+### Session: TypeScript Build Pipeline & Stub Implementation
+
+**Features Completed**:
+- `ext-typescript-setup` (todo → done)
+
+**Changes**:
+- ✅ Created `vite.config.ts`:
+  - Build configuration for 4 entry points (background, content, popup, options)
+  - Static file copying for manifest, icons, HTML/CSS
+  - Path alias `@/` → `extension/src/`
+  - Source maps in development mode
+- ✅ Created stub source files:
+  - `extension/src/background.ts` - Service worker with message routing
+  - `extension/src/content.ts` - Content script for COMET DOM injection
+  - `extension/src/popup/popup.html` - Popup UI structure
+  - `extension/src/popup/popup.css` - Popup styling
+  - `extension/src/popup/popup.ts` - Popup logic
+  - `extension/src/options/options.html` - Options page structure
+  - `extension/src/options/options.css` - Options page styling
+  - `extension/src/options/options.ts` - Auth UI logic (Supabase pending)
+- ✅ Created directory structure:
+  - `extension/src/api/` - API client folder (empty)
+  - `extension/src/core/` - Core logic folder (empty)
+  - `extension/src/utils/` - Utilities folder (empty)
+- ✅ Verified build pipeline:
+  - Installed npm dependencies (378 packages)
+  - Fixed TypeScript linting errors (unused parameters)
+  - Successfully built extension to `dist/`
+  - All 4 JS files compiled correctly
+  - Static assets copied (manifest, icons, HTML, CSS)
+- ✅ Updated `features.json`:
+  - `ext-typescript-setup`: marked as done
+
+**Commits**:
+- (Pending) TypeScript setup and stub implementation
+
+**Key Decisions**:
+1. **Vite as Build Tool**:
+   - Fast dev server with HMR
+   - Module-based output (type: "module")
+   - Better than webpack for extension builds
+   - Native ESM support
+
+2. **Stub-First Approach**:
+   - Created minimal working stubs for all components
+   - All TODO comments mark integration points
+   - Enables parallel development of modules
+   - Can test build/load cycle immediately
+
+3. **Path Alias Strategy**:
+   - `@/` resolves to `extension/src/`
+   - Consistent between vite.config.ts and tsconfig.json
+   - Simplifies imports: `import { x } from '@/core/module'`
+   - Easier refactoring and module organization
+
+4. **HTML/CSS Approach**:
+   - Keep HTML/CSS separate from TS (not inline)
+   - Copied as static assets by vite-plugin-static-copy
+   - Easier to preview and edit
+   - Consistent with extension manifest structure
+
+**Blockers**:
+- None for TypeScript setup (complete and verified)
+- Next modules need Supabase types (blocked on external integration)
+
+**Next Steps**:
+1. Commit TypeScript setup and stub files
+2. Move to `test-unit-setup` (Vitest configuration verification)
+3. Move to `ext-config-types` (create config.ts and types.ts)
+4. Eventually integrate Supabase client when backend is ready
+
+**Notes**:
+- Build time: ~92ms (very fast)
+- Output size: all <1KB per file (excellent for extension)
+- TypeScript strict mode working correctly
+- ESLint and Prettier configs already in place
+- Extension can be loaded in Chrome now (with minimal functionality)
+- Ready to implement actual feature modules incrementally
+
+**Testing the Extension**:
+To manually test in Chrome:
+1. Run `npm run build` to create dist/
+2. Go to chrome://extensions/
+3. Enable "Developer mode"
+4. Click "Load unpacked"
+5. Select the `dist/` folder
+6. Extension will load (popup and options page will work, but show placeholders)
+
+---
+
 ## Template for Future Entries
 
 ```markdown

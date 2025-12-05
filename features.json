@@ -18,8 +18,8 @@
   {
     "id": "ext-typescript-setup",
     "description": "TypeScript 설정 (tsconfig, 빌드 파이프라인)",
-    "status": "todo",
-    "notes": "strict 모드, src/ → dist/ 빌드 구조",
+    "status": "done",
+    "notes": "Completed 2025-12-05. Vite build pipeline, strict mode, stub files created, build verified",
     "dependencies": ["project-init"],
     "milestone": "M1"
   },

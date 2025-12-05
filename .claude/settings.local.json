@@ -9,7 +9,10 @@
       "Bash(git remote add:*)",
       "Bash(git branch:*)",
       "Bash(git push:*)",
-      "Bash(printf:*)"
+      "Bash(printf:*)",
+      "Bash(pnpm build:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm install)"
     ],
     "deny": [],
     "ask": []
