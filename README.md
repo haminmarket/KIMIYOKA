@@ -30,11 +30,15 @@ pnpm install
 # 환경 변수 설정
 cd extension
 cp .env.example .env
-# .env 파일을 편집하여 Supabase 정보 입력
+# .env 파일 편집 - Supabase Dashboard → Settings → API 에서 credentials 획득
+# ⚠️ 주의: 서비스 롤 키는 절대 확장에 넣지 말 것!
 
-# 개발 모드 실행
+# 개발 모드 실행 (from project root)
+cd ..
 pnpm dev
 ```
+
+> **Environment Variables**: See `extension/.env.example` for required keys. Never commit real credentials or service role keys. Public/anon keys only!
 
 ### Chrome에 확장 로드
 
@@ -110,14 +114,13 @@ pnpm test:coverage
 
 ## 📋 개발 상태
 
-현재 M1 (Foundation) 단계 진행 중.
+**Single Source of Truth**: [features.json](./features.json)
 
-- ✅ 프로젝트 초기 세팅
-- ⏳ TypeScript 설정
-- ⏳ 기본 확장 구조
-- ⏳ COMET DOM 연동 모듈
+Current milestone: M1 (Foundation)
 
-자세한 진행 상황은 [features.json](./features.json)과 [claude-progress.md](./claude-progress.md)를 참조하세요.
+For detailed progress, see:
+- [features.json](./features.json) - Feature checklist with status
+- [claude-progress.md](./claude-progress.md) - Session-by-session development log
 
 ## 🤝 기여
 
