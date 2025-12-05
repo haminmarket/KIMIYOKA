@@ -5,20 +5,32 @@
 
 console.log('COMET Shortcuts: Content script loaded')
 
-// TODO: Import COMET DOM module
-// import { cometDom } from '@/core/cometDom'
+import { cometDom } from '@/core/cometDom'
 
 // Listen for messages from popup/background
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   console.log('Content script received message:', message)
 
   if (message.type === 'INSERT_PROMPT') {
-    // TODO: Use cometDom.insertPrompt() to inject prompt
-    // TODO: Trigger COMET submission
-    sendResponse({ success: true })
+    try {
+      cometDom.insertPrompt(message.prompt || '')
+      cometDom.submit()
+      sendResponse({ success: true })
+    } catch (err) {
+      console.error(err)
+      sendResponse({ success: false, error: (err as Error).message })
+    }
   } else if (message.type === 'CHECK_COMET') {
-    // TODO: Use cometDom.isOpen() to check if COMET is available
-    sendResponse({ cometAvailable: false }) // Placeholder
+    sendResponse({ cometAvailable: cometDom.isOpen() })
+  } else if (message.type === 'RUN_WORKFLOW') {
+    try {
+      if (!cometDom.isOpen()) throw new Error('COMET assistant not found')
+      cometDom.insertPrompt(message.prompt || '')
+      cometDom.submit()
+      sendResponse({ success: true })
+    } catch (err) {
+      sendResponse({ success: false, error: (err as Error).message })
+    }
   }
 
   return true

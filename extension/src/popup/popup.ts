@@ -73,9 +73,25 @@ function renderWorkflows(container: HTMLElement, workflows: Workflow[]) {
   container.querySelectorAll<HTMLButtonElement>('.run-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const workflowId = btn.dataset.wid
-      console.log('Run workflow', workflowId)
-      // TODO: send message to content script to insert prompt & submit
+      const prompt = workflows.find(w => w.id === workflowId)?.prompt || ''
+      runWorkflow(prompt)
     })
+  })
+}
+
+async function runWorkflow(prompt: string) {
+  const tab = await getCurrentTab()
+  if (!tab.id) return
+
+  chrome.tabs.sendMessage(tab.id, { type: 'RUN_WORKFLOW', prompt }, (resp) => {
+    if (chrome.runtime.lastError) {
+      console.error('Message failed', chrome.runtime.lastError)
+      alert('Failed to reach content script (is COMET tab loaded?)')
+      return
+    }
+    if (!resp?.success) {
+      alert(resp?.error || 'Failed to run workflow')
+    }
   })
 }
 
