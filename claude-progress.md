@@ -375,6 +375,7 @@ To manually test in Chrome:
   - background: 배지 설정, FINAL_GOAL 메시지 수신해 logs 업데이트
   - cometDom helper + domainExtractor + Vitest 테스트 추가
 - test: `npm test`(Vitest) 통과 (domainExtractor, cometDom 테스트)
+  - 추가 테스트 기록: 2025-12-05 20:02 `npm test -- tests/cometDom.test.ts` 통과 확인
 
 **Commits**:
 - fa09587 (logs RLS 문서화), 06ac34a (Supabase client/config), ec96c09 (cometDom + popup/options wiring), 81e85a0 (popup run flow), 43244c3 (logs started/success flow), cda0514 (plan-aware UI, badge, final-goal observer, tests)

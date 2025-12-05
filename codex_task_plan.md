@@ -38,6 +38,7 @@
 - 테스트 기반 작업
   - [x] Vitest 설정 확인 및 기본 unit 테스트 추가 (domain extractor, cometDom)
   - [ ] mock COMET DOM fixture 확장 및 submit/observer 시나리오 추가
+  - [x] cometDom unit test 실행 확인 (tests/cometDom.test.ts)
 
 ## Phase 3 — 테스트/하드닝 & 운영 준비
 - 테스트 시나리오 정리

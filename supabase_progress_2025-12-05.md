@@ -74,6 +74,9 @@
 - 다음 조치 옵션:
   - 추가 조치 없음 (UPDATE 경로 정상 동작). 필요 시 서비스 롤로 admin update도 가능.
 
+10) 테스트 기록 (2025-12-05 20:02)
+- `npm test -- tests/cometDom.test.ts` 통과 (Vitest, jsdom 기반)
+
 ## 남은 작업 및 우선순위
 - Edge Functions 동기화 (높음): `extension-log-ingest`, `extension-check-license` 응답/검증 로직이 status/meta 스펙을 따르는지 확인하고 필요 시 수정.
 - 로컬/스테이징 스모크 테스트 (높음): anon 키로 `workflows` read, 인증 세션으로 logs started→success 업데이트 수행(위 SQL) 후 RLS/제약 확인.
