@@ -1,0 +1,226 @@
+[
+  {
+    "id": "project-init",
+    "description": "프로젝트 초기 세팅 (Git, 문서, 구조)",
+    "status": "in_progress",
+    "notes": "Started 2025-12-05. Git init, agent_docs, features.json 생성 중",
+    "dependencies": [],
+    "milestone": "M1"
+  },
+  {
+    "id": "ext-manifest-basic",
+    "description": "Manifest V3 기본 파일 생성 (manifest.json)",
+    "status": "todo",
+    "notes": "최소 권한만 요청, background/content/popup/options 정의",
+    "dependencies": ["project-init"],
+    "milestone": "M1"
+  },
+  {
+    "id": "ext-typescript-setup",
+    "description": "TypeScript 설정 (tsconfig, 빌드 파이프라인)",
+    "status": "todo",
+    "notes": "strict 모드, src/ → dist/ 빌드 구조",
+    "dependencies": ["project-init"],
+    "milestone": "M1"
+  },
+  {
+    "id": "ext-config-types",
+    "description": "공통 타입 정의 및 환경 변수 구조 (config.ts, types.ts)",
+    "status": "todo",
+    "notes": "PlanId, CheckLicenseRequest/Response, LogIngestRequest/Response 등",
+    "dependencies": ["ext-typescript-setup"],
+    "milestone": "M1"
+  },
+  {
+    "id": "ext-api-client-skeleton",
+    "description": "Supabase API 클라이언트 스켈레톤 (api/supabaseClient.ts)",
+    "status": "todo",
+    "notes": "checkLicense(), sendLog() 함수만 - 실제 통신은 Supabase LLM 담당 후 연동",
+    "dependencies": ["ext-config-types"],
+    "milestone": "M1"
+  },
+  {
+    "id": "ext-comet-dom-module",
+    "description": "COMET DOM 탐색/조작 모듈 (core/cometDom.ts)",
+    "status": "todo",
+    "notes": "isCometOpen(), findInputField(), insertPrompt(), getQueryTitle(), getTimelineItems() - mock 기반으로 시작",
+    "dependencies": ["ext-typescript-setup"],
+    "milestone": "M2"
+  },
+  {
+    "id": "ext-domain-extractor",
+    "description": "현재 탭 URL에서 도메인 추출 유틸 (utils/domainExtractor.ts)",
+    "status": "todo",
+    "notes": "youtube.com, notion.so 등 추출, localhost/IP 처리",
+    "dependencies": ["ext-typescript-setup"],
+    "milestone": "M2"
+  },
+  {
+    "id": "ext-background-basic",
+    "description": "Background service worker 기본 구조 (background.ts)",
+    "status": "todo",
+    "notes": "메시지 수신, chrome.tabs API 연동, 이벤트 리스너",
+    "dependencies": ["ext-manifest-basic"],
+    "milestone": "M2"
+  },
+  {
+    "id": "ext-content-basic",
+    "description": "Content script 기본 구조 (content.ts)",
+    "status": "todo",
+    "notes": "COMET 감지, 메시지 수신, DOM 조작",
+    "dependencies": ["ext-comet-dom-module", "ext-manifest-basic"],
+    "milestone": "M2"
+  },
+  {
+    "id": "ext-popup-ui-html",
+    "description": "Popup HTML/CSS 기본 UI (popup/popup.html, popup.css)",
+    "status": "todo",
+    "notes": "최소 디자인, 바닐라 CSS, 워크플로우 리스트 컨테이너",
+    "dependencies": ["ext-manifest-basic"],
+    "milestone": "M2"
+  },
+  {
+    "id": "ext-popup-domain-display",
+    "description": "Popup에서 현재 도메인 표시",
+    "status": "todo",
+    "notes": "chrome.tabs.query로 현재 탭 URL 가져오기 → domainExtractor 사용",
+    "dependencies": ["ext-popup-ui-html", "ext-domain-extractor"],
+    "milestone": "M2"
+  },
+  {
+    "id": "ext-popup-workflow-list",
+    "description": "Popup에서 워크플로우 리스트 표시",
+    "status": "todo",
+    "notes": "mock 데이터로 시작, 도메인 필터링, Free/Pro 뱃지 표시",
+    "dependencies": ["ext-popup-domain-display", "ext-api-client-skeleton"],
+    "milestone": "M2"
+  },
+  {
+    "id": "ext-popup-run-button",
+    "description": "Popup의 '실행' 버튼 클릭 핸들러",
+    "status": "todo",
+    "notes": "content script에 메시지 전송 → COMET 프롬프트 삽입 트리거",
+    "dependencies": ["ext-popup-workflow-list", "ext-content-basic"],
+    "milestone": "M2"
+  },
+  {
+    "id": "ext-options-ui-html",
+    "description": "Options 페이지 HTML/CSS (options/options.html, options.css)",
+    "status": "todo",
+    "notes": "로그인/회원가입 폼, 사용자 상태 표시",
+    "dependencies": ["ext-manifest-basic"],
+    "milestone": "M2"
+  },
+  {
+    "id": "ext-options-auth-ui",
+    "description": "Options 페이지 인증 UI 로직 (options.ts)",
+    "status": "todo",
+    "notes": "이메일/비밀번호 입력, chrome.storage에 세션 저장 (Supabase Auth는 나중에)",
+    "dependencies": ["ext-options-ui-html", "ext-api-client-skeleton"],
+    "milestone": "M2"
+  },
+  {
+    "id": "ext-prompt-injection",
+    "description": "COMET 입력창에 프롬프트 자동 삽입 기능",
+    "status": "todo",
+    "notes": "contenteditable 처리, input 이벤트 발생, submit 버튼 클릭",
+    "dependencies": ["ext-content-basic", "ext-comet-dom-module"],
+    "milestone": "M2"
+  },
+  {
+    "id": "ext-log-creation",
+    "description": "워크플로우 실행 후 로그 생성 및 전송",
+    "status": "todo",
+    "notes": "user_id, workflow_id, url, domain, status, meta 수집 → sendLog() 호출",
+    "dependencies": ["ext-prompt-injection", "ext-api-client-skeleton"],
+    "milestone": "M2"
+  },
+  {
+    "id": "ext-domain-notification",
+    "description": "도메인 진입 시 '사용 가능한 숏컷' 알림 표시",
+    "status": "todo",
+    "notes": "배지 또는 in-page 토스트, 워크플로우 존재 여부 체크",
+    "dependencies": ["ext-background-basic", "ext-domain-extractor"],
+    "milestone": "M3"
+  },
+  {
+    "id": "ext-free-pro-filtering",
+    "description": "Free/Pro 워크플로우 필터링 로직",
+    "status": "todo",
+    "notes": "사용자 plan과 workflow.plan 비교, UI에 잠금 표시",
+    "dependencies": ["ext-popup-workflow-list", "ext-options-auth-ui"],
+    "milestone": "M3"
+  },
+  {
+    "id": "ext-error-handling",
+    "description": "전역 에러 핸들링 및 사용자 메시지",
+    "status": "todo",
+    "notes": "네트워크 오류, COMET 없음, 권한 부족 등 처리",
+    "dependencies": ["ext-popup-workflow-list", "ext-prompt-injection"],
+    "milestone": "M3"
+  },
+  {
+    "id": "ext-mock-to-real-supabase",
+    "description": "Mock 데이터를 실제 Supabase API로 교체",
+    "status": "blocked",
+    "notes": "Blocked: Supabase LLM이 Edge Functions 완성 후 진행",
+    "dependencies": ["ext-api-client-skeleton"],
+    "milestone": "M3"
+  },
+  {
+    "id": "ext-comet-real-integration",
+    "description": "실제 COMET DOM 스펙 적용",
+    "status": "blocked",
+    "notes": "Blocked: 실제 COMET HTML 제공되면 cometDom.ts 업데이트",
+    "dependencies": ["ext-comet-dom-module"],
+    "milestone": "M3"
+  },
+  {
+    "id": "test-unit-setup",
+    "description": "Unit 테스트 환경 세팅 (Vitest, jsdom)",
+    "status": "todo",
+    "notes": "vitest.config.ts, test 스크립트, fixtures 폴더 구조",
+    "dependencies": ["ext-typescript-setup"],
+    "milestone": "M1"
+  },
+  {
+    "id": "test-comet-dom",
+    "description": "COMET DOM 모듈 unit 테스트",
+    "status": "todo",
+    "notes": "mock HTML로 findInputField, insertPrompt 등 테스트",
+    "dependencies": ["ext-comet-dom-module", "test-unit-setup"],
+    "milestone": "M2"
+  },
+  {
+    "id": "test-domain-extractor",
+    "description": "Domain extractor unit 테스트",
+    "status": "todo",
+    "notes": "다양한 URL 형식 테스트 (youtube.com, notion.so, localhost 등)",
+    "dependencies": ["ext-domain-extractor", "test-unit-setup"],
+    "milestone": "M2"
+  },
+  {
+    "id": "test-api-client",
+    "description": "API client unit 테스트 (mocked fetch)",
+    "status": "todo",
+    "notes": "checkLicense, sendLog 요청/응답 검증",
+    "dependencies": ["ext-api-client-skeleton", "test-unit-setup"],
+    "milestone": "M2"
+  },
+  {
+    "id": "docs-update-claude-md",
+    "description": "CLAUDE.md 최종 업데이트 (실제 구조 반영)",
+    "status": "todo",
+    "notes": "빌드 명령, 테스트 명령, 디렉토리 구조 정확히 반영",
+    "dependencies": ["ext-typescript-setup", "test-unit-setup"],
+    "milestone": "M2"
+  },
+  {
+    "id": "ci-basic-setup",
+    "description": "기본 CI 파이프라인 (GitHub Actions)",
+    "status": "todo",
+    "notes": "lint, typecheck, test 자동 실행",
+    "dependencies": ["test-unit-setup"],
+    "milestone": "M4"
+  }
+]

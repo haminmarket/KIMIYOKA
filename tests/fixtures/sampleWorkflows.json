@@ -1,0 +1,56 @@
+[
+  {
+    "id": "wf-youtube-summary",
+    "title": "유튜브 영상 요약 + 클립 추출",
+    "domain": "youtube.com",
+    "summary": "영상 내용을 요약하고 핵심 포인트 5개를 추출합니다. 공유할 클립 시간대도 추천합니다.",
+    "prompt": "이 유튜브 영상을 분석해서:\n1. 전체 내용 3문장 요약\n2. 핵심 포인트 5개\n3. 공유하기 좋은 클립 시간대 3개\n형식으로 정리해줘.",
+    "plan": "FREE",
+    "success_rate": 0.85
+  },
+  {
+    "id": "wf-youtube-transcript",
+    "title": "유튜브 자막 전체 추출 및 정리",
+    "domain": "youtube.com",
+    "summary": "영상의 전체 자막을 추출하고 문단별로 정리합니다. 번역도 가능합니다.",
+    "prompt": "이 유튜브 영상의 자막 전체를 추출해서 문단별로 정리해줘. 시간대 표시도 함께 해줘.",
+    "plan": "PRO",
+    "success_rate": 0.92
+  },
+  {
+    "id": "wf-notion-template",
+    "title": "Notion 페이지 템플릿 생성",
+    "domain": "notion.so",
+    "summary": "현재 페이지 구조를 분석해서 재사용 가능한 템플릿을 만듭니다.",
+    "prompt": "이 Notion 페이지의 구조를 분석해서 템플릿으로 만들어줘. 데이터베이스 속성과 페이지 레이아웃을 포함해서.",
+    "plan": "PRO",
+    "success_rate": 0.78
+  },
+  {
+    "id": "wf-twitter-thread",
+    "title": "트위터 스레드 요약",
+    "domain": "twitter.com",
+    "summary": "긴 스레드를 3-5문장으로 요약하고 핵심 논점을 정리합니다.",
+    "prompt": "이 트위터 스레드를 읽고:\n1. 전체 내용 3문장 요약\n2. 핵심 논점 3개\n3. 중요한 통계나 데이터\n형식으로 정리해줘.",
+    "plan": "FREE",
+    "success_rate": 0.88
+  },
+  {
+    "id": "wf-reddit-analysis",
+    "title": "Reddit 댓글 감정 분석",
+    "domain": "reddit.com",
+    "summary": "게시글의 댓글을 분석해서 전반적인 감정과 주요 의견을 파악합니다.",
+    "prompt": "이 Reddit 게시글의 댓글들을 분석해서:\n1. 전반적인 감정 (긍정/부정/중립 %)\n2. 가장 많이 언급된 의견 3가지\n3. 주목할 만한 소수 의견\n정리해줘.",
+    "plan": "PRO",
+    "success_rate": 0.81
+  },
+  {
+    "id": "wf-github-pr-review",
+    "title": "GitHub PR 코드 리뷰",
+    "domain": "github.com",
+    "summary": "Pull Request의 변경사항을 분석하고 리뷰 코멘트를 작성합니다.",
+    "prompt": "이 PR의 코드 변경사항을 리뷰해줘:\n1. 주요 변경 내용 요약\n2. 잠재적 이슈나 개선점 3가지\n3. 테스트 커버리지 확인 사항\n형식으로 정리해줘.",
+    "plan": "PRO",
+    "success_rate": 0.76
+  }
+]

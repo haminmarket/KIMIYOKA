@@ -1,0 +1,287 @@
+### COMET 어시스턴트 DOM 요약 사양
+
+*(Perplexity Sidecar / “브라우저 어시스턴트” DOM, 토큰 절약용 참고 문서)*
+
+---
+
+## 1. 전체 구조 개요
+
+이 HTML은 **Perplexity 사이드카(Sidecar) 어시스턴트 패널**의 DOM이다.
+브라우저 우측에 뜨는 “COMET 어시스턴트” 패널 전체가 한 페이지로 렌더링된다.
+
+* 최상위 루트
+
+  ```html
+  <html
+    lang="ko-KR"
+    data-erp="sidecar"
+    data-color-scheme="light"
+    data-theme="orange"
+    dir="ltr"
+  >
+  ```
+
+  * `data-erp="sidecar"` 이 붙어 있으면 **사이드카 어시스턴트 UI가 열린 상태**로 보면 된다.
+
+* `<body>` 안에는 대략 아래 구조가 있다.
+
+  * `<main id="root">` : 어시스턴트 전체 UI 루트
+  * 상단 헤더 바 (브랜드, “탭에서 열기” 등)
+  * 중앙 스크롤 영역
+
+    * 쿼리(질문) 타이틀
+    * 타임라인 / 로그 (할 일, 액션, 상태)
+  * 하단 입력 영역 (프롬프트 입력 + 전송 버튼)
+
+이 문서에서 중요한 건 **입력 영역 DOM + 타임라인(로그) 구조** 두 가지뿐이다.
+나머지 버튼/토스트/스크립트는 거의 무시해도 된다.
+
+---
+
+## 2. 쿼리 타이틀 영역 (사용자 첫 질문)
+
+사용자가 처음 어시스턴트에게 던진 “메인 프롬프트”는 **타이틀 영역**에 저장된다.
+
+* DOM 특징
+
+  * 쿼리는 `<main id="root">` 내부의 중앙 컨텐츠 섹션에 있다.
+  * 구조(요지):
+
+    ```html
+    <h1 class="group/query ...">
+      <div class="flex ...">
+        <span class="select-text">
+          <!-- 여기 안의 텍스트가 사용자의 전체 질문/요청 -->
+          어시스턴트로 해당 작업을 진행해. 최근자 레딧의 ...
+        </span>
+      </div>
+    </h1>
+    ```
+
+* 요약
+
+  * **사용자 최초 지시문(“메인 프롬프트”)** 은
+    `h1.group/query` → 그 안의 `span.select-text` 텍스트로 읽으면 된다.
+  * 이걸 따로 저장해두면, 나중에 로그 요약 시
+    “어떤 요청에 대해 실행된 타임라인인지”를 설명할 수 있다.
+
+---
+
+## 3. 타임라인 / 로그 영역 구조
+
+어시스턴트가 수행하는 **할 일 목록, 액션, 상태 변화**는
+중앙 컨텐츠의 **타임라인 형태**로 렌더링된다.
+
+### 3.1 전체 위치
+
+* `<main id="root">` 내부, 쿼리 타이틀 아래에 위치.
+* 상위 컨테이너 예시(요약):
+
+  ```html
+  <div class="erp-sidecar:min-h-[var(--sidecar-content-height)] ...">
+    <div class="gap-sm flex flex-col">   <!-- 이 안에 여러 goal/step 아이템들이 쌓인다 -->
+      ...
+    </div>
+  </div>
+  ```
+
+실제 클래스는 Tailwind 유틸리티가 잔뜩 붙어 있지만,
+**실질적으로 중요한 건 “개별 로그 아이템 구조”** 하나다.
+
+### 3.2 개별 로그 아이템 (goal / step)
+
+예를 들어 `"탭 생성 중"`, `"할 일 목록 생성 중"`, `"페이지 텍스트 가져오기"` 같은 문구가
+각각 **하나의 로그(타임라인 아이템)** 으로 표현된다.
+
+* 대표 구조:
+
+  ```html
+  <div class="group/goal relative flex overflow-hidden gap-[7px]"
+       role="listitem"
+       id="1">
+    <div class="min-w-0 grow">
+      <div class="flex flex-col">
+        <div class="pb-md gap-y-sm flex w-full flex-col empty:hidden group-last/goal:pb-0">
+          <div class="mt-1.5 empty:hidden" id="a68e4fdf-fc78-...">
+            <div class="gap-sm group flex cursor-pointer flex-col -my-1.5" style="opacity: 1;">
+              <div class="flex items-center gap-1 py-1.5 font-sans text-sm ...">
+                <span style="animation-duration: 1800ms;">
+                  탭 생성 중
+                </span>
+              </div>
+              <!-- 필요 시 추가 텍스트/설명 블록 등 -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  ```
+
+* 패턴 정리
+
+  * 각 로그(“goal/step/액션”)은
+
+    * `div[role="listitem"].group/goal` 형태의 요소 하나로 표현된다.
+    * 그 안 깊숙이 있는 `div.flex.items-center ... > span` 의 텍스트가
+      **사람이 읽는 상태 문장**(예: “탭 생성 중”, “페이지 텍스트 가져오기”)이다.
+  * 이 `role="listitem"` 들이 **시간 순으로 위→아래 나열**된다.
+  * 어떤 아이템은 영어 긴 문장(“Good! I'm now in the r/Aliexpress subreddit...”)이 들어가기도 한다.
+
+    * 이 텍스트들도 전부 “어시스턴트의 상태/행동 설명”이라고 보면 된다.
+
+### 3.3 로그 추출 관점에서 필요한 것
+
+**로그 요약용으로 LLM에 넘길 때 실제로 필요한 정보는 딱 두 가지다.**
+
+1. **사용자 메인 요청**
+
+   * `h1.group/query span.select-text` 의 텍스트
+2. **타임라인 아이템들**
+
+   * `div[role="listitem"].group/goal` 아래에 있는 사람 읽을 수 있는 텍스트 전체
+
+DOM 구조나 클래스는 변해도,
+“**listitem 역할의 group/goal 들을 위에서 아래 순서대로 텍스트만 뽑는다**”처럼 생각하면 된다.
+
+---
+
+## 4. 입력 영역 (프롬프트 인젝션용)
+
+크롬 확장에서 가장 중요한 부분은
+**어시스턴트 입력창에 텍스트를 넣고, Submit 버튼을 누르는 것**이다.
+
+### 4.1 입력창 DOM
+
+입력창은 `<div>` 기반의 **contenteditable 텍스트 박스**로 구현되어 있다.
+Lexical 에디터를 쓰는 듯한 구조.
+
+* 핵심 요소:
+
+  ```html
+  <div
+    id="ask-input"
+    role="textbox"
+    contenteditable="true"
+    data-lexical-editor="true"
+    aria-placeholder="무엇이든 물어보세요…"
+    class="overflow-auto ... size-full"
+    spellcheck="true"
+  >
+    <p dir="auto"><br/></p>
+  </div>
+  ```
+
+* 주변 구조(요약):
+
+  ```html
+  <div class="px-3 flex">
+    <div class="overflow-hidden relative flex h-full w-full flex-grow flex-shrink p-sm order-1">
+      <div class="w-full" style="min-height: 1.5em;">
+        <!-- 여기 안에 ask-input + placeholder overlay -->
+        <div id="ask-input" ...>...</div>
+        <div aria-hidden="true">
+          <div class="absolute inset-0 ... text-quieter p-sm">
+            무엇이든 물어보세요…
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 오른쪽 버튼 영역 (첨부, 마이크, Submit) -->
+    ...
+  </div>
+  ```
+
+### 4.2 Submit 버튼 DOM
+
+입력창 오른쪽에 **전송 버튼**이 있다.
+
+* 대표 구조:
+
+  ```html
+  <button
+    aria-label="Submit"
+    data-testid="submit-button"
+    type="button"
+    class="bg-subtle text-quiet ...">
+    <!-- SVG 아이콘 (위쪽 화살표) -->
+  </button>
+  ```
+
+* 특징
+
+  * `aria-label="Submit"`
+  * `data-testid="submit-button"`
+  * 활성/비활성은 `disabled` 속성 여부로 제어된다.
+
+### 4.3 입력/전송을 DOM 레벨에서 어떻게 다루면 되는지 (개념만)
+
+이 문서는 **“어떤 요소를 만져야 하는지”** 만 설명한다.
+구체적인 JS 코드는 나중에 LLM이 쓸 것이라고 가정하고, 개념만 정리:
+
+1. **입력창 선택**
+
+   * 셀렉터 예: `#ask-input[contenteditable="true"]`
+2. **텍스트 삽입**
+
+   * contenteditable 특성상, 내부 구조는 `<p>` 등으로 구성된다.
+   * 일반적으로는
+
+     * 기존 자식 노드를 비우고,
+     * `<p dir="auto">여기에 프롬프트 텍스트</p>` 를 넣은 뒤,
+     * 필요한 키 이벤트(`input`, `keydown Enter` 등)를 트리거하는 방식으로 동작시킬 수 있다.
+3. **전송 버튼 클릭**
+
+   * 셀렉터 예: `button[data-testid="submit-button"]`
+   * `disabled` 가 아니라면 `.click()` 으로 제출할 수 있다.
+
+이 정도 정보면, LLM이 코드를 작성할 때
+**추가로 원본 HTML을 다시 읽지 않고도** 셀렉터/구조를 재구성할 수 있다.
+
+---
+
+## 5. 확장/로그 설계 관점에서 핵심 포인트만 정리
+
+이 문서는 “어시스턴트 DOM” 에서 **반드시 알아야 할 부분만** 모아둔 것이다.
+
+### 5.1 “어시스턴트가 켜져 있는지” 판별
+
+* `html[data-erp="sidecar"]`
+* `main#root` 아래에 `div.erp-sidecar:min-h[...]` 형태의 컨텐츠 존재
+* `#ask-input[contenteditable="true"]` 가 존재
+
+위 세 가지 중 두 개 이상이 존재하면
+**COMET/Perplexity 어시스턴트 패널이 열린 상태**로 판단해도 무방하다.
+
+### 5.2 로그 수집에 필요한 최소 정보
+
+1. 사용자 메인 질문(쿼리):
+
+   * `h1.group/query span.select-text` 텍스트
+2. 어시스턴트 타임라인:
+
+   * `div[role="listitem"].group/goal` 들의 텍스트를 위에서부터 순서대로
+   * 각 아이템이 “할 일”, “상태 변화”, “액션 설명” 역할
+
+이 두 덩어리만 Supabase `logs` 테이블에 넣어도
+나중에 “성공/실패, 어떤 도메인에서 어떤 작업을 했는지, 턴 수” 등을
+LLM이 재가공해서 요약하기에 충분한 재료가 된다.
+
+### 5.3 프롬프트 인젝션에 필요한 최소 정보
+
+* 입력창: `#ask-input[role="textbox"][contenteditable="true"]`
+* 전송: `button[data-testid="submit-button"][aria-label="Submit"]`
+
+이 두 요소만 정확히 알고 있으면
+크롬 확장 content script가 **어시스턴트 입력을 완전히 제어**할 수 있다.
+
+---
+
+이 문서만 LLM에게 던져줘도,
+
+* “어시스턴트 DOM이 어떻게 생겼는지”
+* “어디에 프롬프트를 넣고, 어디를 클릭해야 하는지”
+* “어디서 어떤 식으로 로그 텍스트를 뽑으면 되는지”
+
+를 다시 HTML 전체를 읽지 않고 이해할 수 있게 구성했다.

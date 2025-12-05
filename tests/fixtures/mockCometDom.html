@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko-KR" data-erp="sidecar" data-color-scheme="light" data-theme="orange" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <title>Mock COMET Assistant</title>
+</head>
+<body>
+  <main id="root">
+    <!-- Query Title Area -->
+    <div class="content-section">
+      <h1 class="group/query">
+        <div class="flex">
+          <span class="select-text">
+            어시스턴트로 해당 작업을 진행해. 최근자 레딧의 내용을 요약해줘.
+          </span>
+        </div>
+      </h1>
+    </div>
+
+    <!-- Timeline Area -->
+    <div class="erp-sidecar:min-h-[var(--sidecar-content-height)]">
+      <div class="gap-sm flex flex-col">
+        <!-- Timeline Item 1 -->
+        <div class="group/goal relative flex overflow-hidden gap-[7px]" role="listitem" id="1">
+          <div class="min-w-0 grow">
+            <div class="flex flex-col">
+              <div class="pb-md gap-y-sm flex w-full flex-col">
+                <div class="mt-1.5">
+                  <div class="gap-sm group flex cursor-pointer flex-col">
+                    <div class="flex items-center gap-1 py-1.5 font-sans text-sm">
+                      <span>탭 생성 중</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeline Item 2 -->
+        <div class="group/goal relative flex overflow-hidden gap-[7px]" role="listitem" id="2">
+          <div class="min-w-0 grow">
+            <div class="flex flex-col">
+              <div class="pb-md gap-y-sm flex w-full flex-col">
+                <div class="mt-1.5">
+                  <div class="gap-sm group flex cursor-pointer flex-col">
+                    <div class="flex items-center gap-1 py-1.5 font-sans text-sm">
+                      <span>페이지 텍스트 가져오기</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="input-container">
+      <div class="px-3 flex">
+        <div class="overflow-hidden relative flex h-full w-full flex-grow flex-shrink p-sm order-1">
+          <div class="w-full" style="min-height: 1.5em;">
+            <!-- Input Field -->
+            <div id="ask-input"
+                 role="textbox"
+                 contenteditable="true"
+                 data-lexical-editor="true"
+                 aria-placeholder="무엇이든 물어보세요…"
+                 class="overflow-auto size-full"
+                 spellcheck="true">
+              <p dir="auto"><br/></p>
+            </div>
+            <!-- Placeholder -->
+            <div aria-hidden="true">
+              <div class="absolute inset-0 text-quieter p-sm">
+                무엇이든 물어보세요…
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Button Area -->
+        <div class="button-area">
+          <button aria-label="Submit"
+                  data-testid="submit-button"
+                  type="button"
+                  class="bg-subtle text-quiet">
+            <svg><!-- Submit icon --></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,39 @@
+{
+  "name": "comet-shortcuts-extension",
+  "version": "0.1.0",
+  "description": "웹에이전트 숏컷 크롬 확장 - COMET 어시스턴트와 연동하여 도메인별 워크플로우를 실행합니다",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter extension dev",
+    "build": "pnpm --filter extension build",
+    "typecheck": "pnpm --filter extension typecheck",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint .",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "clean": "rimraf extension/dist tests/coverage"
+  },
+  "workspaces": [
+    "extension"
+  ],
+  "devDependencies": {
+    "@types/chrome": "^0.0.254",
+    "@types/node": "^20.10.5",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "@vitest/coverage-v8": "^1.0.4",
+    "eslint": "^8.56.0",
+    "jsdom": "^23.0.1",
+    "prettier": "^3.1.1",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.8",
+    "vitest": "^1.0.4"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

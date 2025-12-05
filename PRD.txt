@@ -1,0 +1,520 @@
+📦 프롬프트: Chrome Extension 개발 규칙
+
+당신은 **TypeScript 기반 Chrome Extension(Manifest V3)**를 개발하는 AI 엔지니어다.
+이 프로젝트의 목적과 제약은 다음과 같다.
+
+1. 비즈니스 목적
+
+크리에이터/1인 사업자가 쓰는 웹에이전트 워크플로우 실행용 크롬 확장을 만든다.
+
+핵심 기능:
+
+사용자가 라이선스 키를 입력하면,
+Supabase Edge Function(extension-check-license)를 통해 멤버십 체크를 한다.
+
+유효한 구독일 때만 웹에이전트 워크플로우를 실행한다.
+
+실행 중 사용한 프롬프트/결과 요약/메타정보를 Supabase Edge Function(extension-log-ingest)로 전송하여 로그를 쌓는다.
+
+결제/멤버십 정보의 진실은 LemonSqueezy에 있고, 크롬 확장은 Supabase에서 제공하는 API만 신뢰하면 된다.
+
+2. 기술 스택 및 제한
+
+언어: TypeScript (strict 모드)
+
+Manifest: Manifest V3
+
+UI:
+
+popup 및 options는 HTML + 바닐라 CSS + TS 기반의 최소 UI
+
+React/Tailwind 등의 프레임워크는 사용하지 않는다 (최소 1년).
+
+의존성:
+
+불필요한 NPM 패키지 사용 금지.
+
+HTTP 요청은 fetch 또는 아주 얇은 헬퍼 함수만 사용.
+
+저장소:
+
+라이선스 키, 간단한 유저 설정은 chrome.storage.sync 또는 chrome.storage.local에 저장.
+
+3. 기본 구조
+
+manifest.json
+
+background.service_worker: dist/background.js
+
+action.default_popup: popup.html
+
+options_page: options.html
+
+필요한 최소 권한만 요청 (activeTab, storage, 필요한 host_permissions 등)
+
+/src
+
+background.ts:
+
+서비스 워커. 메시지 수신, 필요한 경우 fetchProxy 가능.
+
+content.ts:
+
+웹 페이지에 주입되는 스크립트 (필요할 경우).
+
+popup.ts:
+
+워크플로우 실행 버튼, 상태 표시.
+
+options.ts:
+
+라이선스 키 입력/저장 UI.
+
+/api/supabaseClient.ts:
+
+checkLicense(licenseKey: string)
+
+sendLog(payload: LogPayload)
+두 함수만 먼저 만든다.
+
+/core/workflows.ts:
+
+실제 웹에이전트 워크플로우 실행 로직(후에 구현).
+
+/core/logger.ts:
+
+logRun(...) 등 로그 전송 헬퍼.
+
+4. Supabase API 연동 규칙
+
+API 엔드포인트(예시, 실제 URL은 env로 분리):
+
+POST https://<PROJECT>.supabase.co/functions/v1/extension-check-license
+
+Request: { licenseKey: string }
+
+Response: { active: boolean; plan: string; expiresAt: string | null }
+
+POST https://<PROJECT>.supabase.co/functions/v1/extension-log-ingest
+
+Request: { licenseKey: string; type: string; payload: unknown }
+
+Response: { ok: boolean } 정도.
+
+모든 호출:
+
+Content-Type: application/json
+
+타임아웃, 네트워크 에러 처리 철저히.
+
+에러일 경우, 유저에게 “네트워크 오류 / 서버 점검 중” 같은 메시지 표시.
+
+5. UX 흐름
+
+사용자는 Options 페이지에서 라이선스 키를 입력하고 “저장” 클릭.
+
+확장은 chrome.storage에 라이선스 키를 저장.
+
+사용자가 Popup에서 “워크플로우 실행”을 누르면:
+
+chrome.storage에서 라이선스 키를 읽음.
+
+checkLicense 호출 → 활성 구독인지 확인.
+
+활성일 경우에만 실제 워크플로우 실행.
+
+워크플로우 실행이 끝나면:
+
+사용한 프롬프트, 결과 일부, 실행시간 등 메타데이터를 sendLog로 Supabase에 전송.
+
+에러 발생 시:
+
+콘솔 로그 + 유저 친화적 에러 메시지.
+
+6. 코드 스타일
+
+TypeScript strict.
+
+함수는 작고 명확한 책임만.
+
+모든 외부 연동 (Supabase API)은 /api 폴더 내부 모듈로만.
+
+“이 파일에서 무슨 역할을 하는지” JSdoc 주석 간단히 붙일 것.
+
+# 1. 제품 개요
+
+## 1.1 제품 이름 (작업명)
+
+* 작업명: **웹에이전트 숏컷 크롬 확장 (가칭)**
+
+## 1.2 한 줄 정의
+
+> **특정 도메인(사이트)에 들어갔을 때, 지금 페이지에서 쓸 수 있는 “웹에이전트 숏컷(프롬프트)”을 추천해주고, 버튼 한 번으로 COMET 어시스턴트 입력창에 프롬프트를 자동 입력해주는 크롬 확장.**
+> 사용/실패/도메인/턴 수 등은 Supabase에 로그로 쌓인다.
+
+## 1.3 목표
+
+1. **코베니가 설계한 숏컷(프롬프트 템플릿)을 제품화**
+
+   * 도메인별 숏컷 목록 제공
+   * 숏컷별 기대효과, 작업 요약, 성공률을 UI로 표현
+2. **COMET 어시스턴트와의 결합**
+
+   * 사용자가 해당 도메인에서 COMET 어시스턴트를 열면
+     “이 도메인에서 쓸 수 있는 숏컷이 있습니다” 알림
+   * 숏컷 선택 시, COMET DOM의 입력창에 프롬프트를 자동 입력
+3. **로그 & 락인 구조**
+
+   * 사용/성공/실패/도메인/턴 수 등을 Supabase에 로그로 저장
+   * 향후 분석/개인화/락인에 활용
+4. **멤버십 모델**
+
+   * 일반 고객 vs 멤버십 고객에게 노출되는 숏컷/기능 다르게
+   * 숏컷 실행은 로그인·회원가입 이후에만 가능
+
+## 1.4 비목표 (1년 MVP에서 하지 않을 것)
+
+* 별도 React/Next.js 대시보드 웹앱 (관리자는 Supabase 대시보드로 충분)
+* 복잡한 워크플로우 에디터 (숏컷은 코베니가 Supabase에 직접 관리)
+* 고급 분석/추천 알고리즘 (추후 단계)
+* Edge Function, 스케줄러, 스토리지 등 고급 서버 기능 (필요해지면 추가)
+
+---
+
+# 2. 대상 사용자 & 사용 시나리오
+
+## 2.1 사용자 타입
+
+1. **일반 사용자 (로그인 전)**
+
+   * 확장 설치만 한 상태
+   * 도메인에서 숏컷 목록/요약은 볼 수 있지만 **실행은 불가**
+2. **회원 (로그인 완료, Free/Pro 구분)**
+
+   * Supabase Auth로 가입/로그인 완료
+   * 플랜에 따라 노출되는 숏컷/기능이 다름
+3. **멤버십(유료) 고객 (Pro)**
+
+   * 멤버십 플랜 활성화 (`users.plan = 'PRO'` 등)
+   * 모든 PRO 전용 숏컷 접근 가능
+
+> 결제/멤버십의 진실은 LemonSqueezy에 있고,
+> 초기에 Supabase `users.plan` 필드는 **수동 업데이트 또는 간단한 동기화**로 유지.
+> (자동 Webhook 연동은 추후 단계로 빼도 됨)
+
+---
+
+# 3. 핵심 기능 (MVP 범위)
+
+## 기능 1. 숏컷 리스트 UI (확장 팝업)
+
+**설명**
+
+* 확장 팝업에서 **“현재 탭의 도메인에 맞는 숏컷 리스트”**를 보여준다.
+* 리스트 아이템은 **프롬프트 전체가 아니라 메타정보만 노출**한다.
+
+**리스트 항목에 포함되는 정보**
+
+* 숏컷 제목 (예: “유튜브 영상 요약 + 클립 추출”)
+* 기대효과 요약문 (1~2줄)
+* 어떤 작업을 하는지 설명 (예: “댓글 분석 + 아이디어 추출”)
+* 해당 도메인 파비콘 (youtube.com 파비콘)
+* 성공확률 (내부적으로 코베니가 입력한 값 or 로그 기반 추후 업데이트)
+* 실행 버튼
+* 멤버십 표시:
+
+  * Free 가능 / Pro 전용 뱃지
+
+**요구사항**
+
+* 현재 탭 URL에서 `domain`을 추출 (`youtube.com`, `twitter.com` 등)
+* Supabase `workflows` 테이블에서:
+
+  * `domain = {현재 도메인}`
+  * & `plan <= user.plan` (예: Free는 Free 전용만, Pro는 전체)
+* 비로그인 상태:
+
+  * 리스트는 보이되, 실행 버튼 클릭 시 로그인 유도
+
+---
+
+## 기능 2. 도메인 접근 시 숏컷 알림
+
+**설명**
+
+* 사용자가 특정 도메인 페이지에 들어간 후 **COMET 어시스턴트 DOM을 열었을 때**,
+  또는 (MVP 기준으로 비용 줄이려면) **해당 도메인에 접속했을 때**:
+
+  * “이 도메인에서 사용할 수 있는 숏컷이 있습니다”라는 **확장 알림/배지/토스트**를 표시.
+
+**1차 현실적인 구현 (간단 버전)**
+
+* **도메인 기준**:
+
+  * 사용자가 새 탭/페이지를 열 때, content script에서 `location.hostname` 체크.
+  * Supabase `workflows`에서 `domain = hostname`으로 조회.
+  * 해당 도메인용 숏컷이 1개 이상 있으면:
+
+    * 확장 아이콘에 배지 표시 or 작은 in-page 알림 (우상단 배너).
+    * 예: “youtube.com에서 사용할 수 있는 숏컷 3개 있음 – 클릭해서 보기”
+
+**2차 (추후)**
+
+* COMET 어시스턴트 DOM이 열렸는지까지 감지:
+
+  * COMET에서 제공할 HTML 구조 기반으로,
+    특정 DOM 노드(어시스턴트 패널 열림)를 감지했을 때만 알림 표시.
+
+---
+
+## 기능 3. Supabase에 저장된 숏컷과의 연동 (일반 vs 멤버십)
+
+**설명**
+
+* 숏컷 정의(프롬프트 템플릿/도메인/요약/플랜)는 전부 Supabase `workflows` 테이블에 저장.
+* 확장은 Supabase에서 데이터를 읽어 와서 UI에 띄운다.
+
+**요구사항**
+
+* 테이블 구조 (초안):
+
+  * `workflows`
+
+    * `id` (PK)
+    * `title`
+    * `domain` (예: `youtube.com`)
+    * `summary` (어떤 작업/기대효과인지)
+    * `prompt` (실제 COMET에 넣을 텍스트, 확장에서는 **직접 노출하지 않음**)
+    * `plan` (`FREE` | `PRO`) – 필요한 플랜
+    * `success_rate` (초기엔 수동 입력, 나중에 로그 기반 업데이트)
+    * `created_at`
+
+* 확장에서:
+
+  * 로그인 상태라면 `user.plan`과 `workflows.plan` 비교
+  * `plan = 'PRO'` 인 숏컷은 **Pro 유저에게만** 리스트/실행 노출
+  * Free 유저에겐:
+
+    * Free 전용만 보이거나,
+    * Pro 항목은 잠긴 상태로 표시
+
+---
+
+## 기능 4. 로그인/회원가입
+
+**설명**
+
+* 숏컷 실행을 누르기 전에 **로그인/회원가입**이 필수.
+* Auth는 Supabase Auth 사용 (이메일+비밀번호 또는 Magic Link).
+
+**요구사항**
+
+* Supabase Auth 활성화:
+
+  * 이메일+비밀번호 로그인 (MVP 기준으로 가장 단순)
+* 확장에 최소한의 Auth UI:
+
+  * 이메일/비밀번호 입력
+  * 로그인/회원가입 버튼
+  * 로그인 상태 표시(현재 이메일, 로그아웃)
+* 로그인 후:
+
+  * `supabase.auth.getUser()`로 `user.id`, `user.email` 확보
+  * `users` 테이블에 동기화:
+
+    * 없으면 insert, 있으면 무시 (Supabase Auth가 user table을 제공해도, 프로젝트에서 별도의 `profiles/users`를 둘 수도 있음)
+
+> 멤버십(유료 여부)는 `users.plan` 같은 컬럼으로 관리.
+> 초기엔 수동으로 Pro 부여하고, 추후 LemonSqueezy Webhook 연동.
+
+---
+
+## 기능 5. 숏컷 실행 → COMET 어시스턴트 입력창에 프롬프트 자동 입력
+
+**설명**
+
+* 사용자가 팝업/알림에서 **숏컷의 “실행” 버튼**을 누르면:
+
+  1. 현재 탭에서 COMET 어시스턴트 DOM 입력창을 찾는다.
+  2. `workflows.prompt` 텍스트를 COMET 입력창에 넣는다.
+  3. (가능하다면) 자동으로 Enter/실행까지 눌러 준다.
+     아니라면 “입력까지 해주고 실행은 유저가” 수준으로.
+
+**요구사항**
+
+* COMET 어시스턴트 HTML/DOM 구조는 별도 문서로 제공 예정.
+* content script에서:
+
+  * 현재 페이지의 DOM에서 COMET 어시스턴트 입력창 element를 찾아서,
+  * `value`를 교체하거나, 필요한 경우 `input`/`change` 이벤트 발생.
+* prompt 텍스트는 **Supabase에서 가져온 것을 그대로 사용**:
+
+  * 확장 내부에서 prompt 편집/저장 기능은 MVP에선 없음 (코베니가 Supabase에만 관리).
+
+---
+
+## 기능 6. 실행 로그 수집 (성공/실패/도메인/턴 수)
+
+**설명**
+
+* 모든 숏컷 실행을 Supabase `logs` 테이블에 저장.
+* 최소한 아래 메타데이터를 기록:
+
+  * 어떤 유저가
+  * 어떤 숏컷(workflow)을
+  * 어느 도메인/URL에서
+  * 언제 실행했고
+  * 성공/실패 여부
+  * (가능하면) COMET와의 대화 턴 수
+
+**요구사항**
+
+* `logs` 테이블 구조 예시:
+
+  * `id` (PK)
+  * `user_id` (FK → Supabase auth.uid)
+  * `workflow_id` (FK → workflows.id)
+  * `url` (전체 URL)
+  * `domain` (hostname)
+  * `status` (`success`, `error` 등)
+  * `ran_at` (timestamp)
+  * `meta` (JSONB: { turns: number, errorMessage?: string, source: "extension" })
+
+* 확장에서 실행 버튼 클릭 시:
+
+  ```ts
+  await supabase.from("logs").insert({
+    workflow_id,
+    url,
+    domain,
+    status,
+    ran_at: new Date().toISOString(),
+    meta: { turns, source: "extension" }
+  })
+  ```
+
+* COMET 로그 구조를 어떻게 받을지에 따라:
+
+  * 턴 수 등은 일단 추정 값으로 넣고,
+  * 추후 DOM/HTML 연동 후 개선 가능.
+
+---
+
+## 기능 7. COMET 어시스턴트 HTML 제공/연동
+
+**설명**
+
+* COMET 어시스턴트의 HTML/DOM 구조는 별도 스펙으로 제공된다.
+* 확장은 이 스펙에 맞춰:
+
+  * **입력창 위치**
+  * **어시스턴트 패널 열림 상태 감지**
+    를 구현.
+
+**요구사항**
+
+* 제공될 COMET HTML/DOM 스펙 문서 기반으로:
+
+  * DOM 탐색 로직을 content script에 캡슐화.
+  * “COMET 어시스턴트가 열려 있는지 / 입력창이 어디인지”를 분리된 유틸 함수로 유지.
+
+---
+
+# 4. 데이터 모델 (Supabase 최소 스키마)
+
+1. `workflows` – 코베니가 만든 숏컷 정의
+
+   * `id` (uuid, PK)
+   * `title` (text)
+   * `domain` (text)  // youtube.com 등
+   * `summary` (text) // 기대효과/작업 설명
+   * `prompt` (text)  // 실제 COMET에 넣을 프롬프트
+   * `plan` (text)    // 'FREE' | 'PRO'
+   * `success_rate` (numeric, nullable)
+   * `created_at` (timestamptz)
+
+2. `logs` – 실행 히스토리
+
+   * `id` (uuid, PK)
+   * `user_id` (uuid, not null) // Supabase Auth uid
+   * `workflow_id` (uuid, FK → workflows.id)
+   * `url` (text)
+   * `domain` (text)
+   * `status` (text) // 'success' | 'error' | 'cancelled'
+   * `ran_at` (timestamptz, default now())
+   * `meta` (jsonb)
+
+3. `pins` (선택, 나중에 써도 됨) – 즐겨찾기 숏컷
+
+   * `id` (uuid, PK)
+   * `user_id` (uuid)
+   * `workflow_id` (uuid)
+   * `created_at`
+
+4. (필요 시) `profiles` or `users` – 확장 내부에서 쓸 추가 정보
+
+   * 초기에는 Supabase Auth user 객체만 써도 됨. `plan` 컬럼은 별도 관리 필요.
+
+---
+
+# 5. Auth & RLS
+
+* **Auth**: Supabase Auth (이메일 + 비밀번호)
+* **RLS 정책**
+
+  * `logs`, `pins`:
+
+    * `user_id = auth.uid()` 인 행만 **읽기/쓰기 허용**
+  * `workflows`:
+
+    * 읽기는 모든 인증된 유저 허용
+    * 쓰기는 관리자(코베니)만 (초기엔 RLS 없이 콘솔에서만 관리해도 됨)
+
+---
+
+# 6. 크롬 확장 구조 (요구사항 관점)
+
+* Manifest V3, TypeScript
+* 주요 파일:
+
+  * `background.ts` – 이벤트 관리 (도메인 진입 감지, 알림 등)
+  * `content.ts` – COMET DOM 탐색, 입력창에 프롬프트 삽입
+  * `popup.ts` – 현재 도메인 숏컷 리스트 UI
+  * `options.ts` – 로그인/회원가입 UI (Supabase Auth)
+* Supabase 연동:
+
+  * `@supabase/supabase-js` 클라이언트 사용
+  * 로그인 후 `supabase.auth.getUser()`로 `user_id` 확보
+  * `from('workflows').select`, `from('logs').insert`로 핵심 기능 완료
+
+---
+
+# 7. 마일스톤 (1년 MVP 플랜)
+
+### M1. 기반 세팅 (1~2주)
+
+* Supabase 프로젝트 생성
+* `workflows`, `logs` 스키마 생성
+* Supabase Auth + RLS 기본 정책 적용
+* 최소 2~3개 도메인용 숏컷 입력
+
+### M2. 크롬 확장 v0 (3~4주)
+
+* 로그인/로그아웃/회원가입 (Supabase Auth)
+* 현재 도메인별 workflows 리스트 표시
+* 실행 버튼 → COMET DOM에 프롬프트 입력 (기본 동작)
+* 실행 시 Supabase `logs` 기록
+
+### M3. 알림 & 멤버십 구분 (5~8주)
+
+* 도메인 진입 시 “사용 가능한 숏컷 있음” 배지/토스트
+* Free vs Pro 숏컷 구분 UI
+* Pro 전용 숏컷 실행 시 업그레이드/결제 유도 메시지
+
+### M4. 안정화 & 내부 데이터 활용 (나머지 기간)
+
+* logs 기반 success_rate 업데이트(수동이라도)
+* 기본적인 “내가 자주 쓰는 숏컷” 분석/정리
+* 필요 시 LemonSqueezy와 Supabase `plan` 필드 동기화 설계
+
+---
