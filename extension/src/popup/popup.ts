@@ -111,12 +111,12 @@ function renderWorkflows(container: HTMLElement, workflows: Workflow[]) {
       const workflowId = btn.dataset.wid
       const wf = workflows.find(w => w.id === workflowId)
       if (!wf) return
-      runWorkflow(wf)
+      runWorkflow(wf, btn)
     })
   })
 }
 
-async function runWorkflow(workflow: Workflow) {
+async function runWorkflow(workflow: Workflow, btn: HTMLButtonElement) {
   const tab = await getCurrentTab()
   if (!tab.id) return
 
@@ -139,19 +139,38 @@ async function runWorkflow(workflow: Workflow) {
   }
 
   const startedAt = Date.now()
-  chrome.tabs.sendMessage(tab.id, { type: 'RUN_WORKFLOW', prompt: workflow.prompt, logId: currentLogId, startedAt }, async (resp) => {
-    if (chrome.runtime.lastError) {
-      console.error('Message failed', chrome.runtime.lastError)
-      alert('Failed to reach content script (is COMET tab loaded?)')
-      await updateLogStatusSafe('error', { errorMessage: 'content script not reachable' })
+  btn.disabled = true
+  btn.textContent = 'Running...'
+
+  chrome.tabs.sendMessage(tab.id, { type: 'CHECK_COMET' }, async (check) => {
+    if (chrome.runtime.lastError || !check?.cometAvailable) {
+      alert('COMET assistant not found on this page')
+      await updateLogStatusSafe('error', { errorMessage: 'COMET not available' })
+      btn.disabled = false
+      btn.textContent = 'Run'
       return
     }
-    if (!resp?.success) {
-      alert(resp?.error || 'Failed to run workflow')
-      await updateLogStatusSafe('error', { errorMessage: resp?.error || 'run failed' })
-      return
-    }
-    await updateLogStatusSafe('success', { source: 'extension' })
+
+    chrome.tabs.sendMessage(tab.id, { type: 'RUN_WORKFLOW', prompt: workflow.prompt, logId: currentLogId, startedAt }, async (resp) => {
+      if (chrome.runtime.lastError) {
+        console.error('Message failed', chrome.runtime.lastError)
+        alert('Failed to reach content script (is COMET tab loaded?)')
+        await updateLogStatusSafe('error', { errorMessage: 'content script not reachable' })
+        btn.disabled = false
+        btn.textContent = 'Run'
+        return
+      }
+      if (!resp?.success) {
+        alert(resp?.error || 'Failed to run workflow')
+        await updateLogStatusSafe('error', { errorMessage: resp?.error || 'run failed' })
+        btn.disabled = false
+        btn.textContent = 'Run'
+        return
+      }
+      // success path: final-goal observer will update log; optimistic UI reset
+      btn.disabled = false
+      btn.textContent = 'Run'
+    })
   })
 }
 
