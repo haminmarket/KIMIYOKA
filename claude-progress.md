@@ -156,6 +156,78 @@ Each session entry should include:
 
 ---
 
+## 2025-12-05 (Third Session)
+
+### Session: Manifest V3 Implementation
+
+**Features Completed**:
+- `project-init` (in_progress → done)
+- `ext-manifest-basic` (todo → done)
+
+**Changes**:
+- ✅ Created `extension/public/manifest.json`:
+  - Manifest version 3 with minimal permissions
+  - Permissions: `activeTab`, `storage`
+  - Host permissions: `<all_urls>` for content script injection
+  - Service worker: `background.js`
+  - Content script: `content.js` (runs at document_idle)
+  - Popup: `popup.html`
+  - Options page: `options.html`
+- ✅ Created placeholder icons:
+  - `extension/public/icons/icon-16.png` (16x16px)
+  - `extension/public/icons/icon-48.png` (48x48px)
+  - `extension/public/icons/icon-128.png` (128x128px)
+  - All placeholders are 1x1 transparent PNGs
+  - `extension/public/icons/README.md` with design guidelines
+- ✅ Updated `features.json`:
+  - `project-init`: marked as done
+  - `ext-manifest-basic`: marked as done
+
+**Commits**:
+- (Pending) Manifest V3 implementation
+
+**Key Decisions**:
+1. **Minimal Permissions Philosophy**:
+   - Only `activeTab` and `storage` for MVP
+   - No `tabs` permission (use activeTab instead)
+   - `host_permissions` needed for content script on all domains
+   - Can add more permissions incrementally as needed
+
+2. **Icon Strategy**:
+   - Created placeholder 1x1 transparent PNGs
+   - Documented requirements in icons/README.md
+   - Ready for designer to replace with actual icons
+   - Won't block development
+
+3. **Service Worker Setup**:
+   - Type: module (allows ES6 imports in background.js)
+   - Will handle extension lifecycle events
+   - Coordinates between popup, content script, and options
+
+4. **Content Script Timing**:
+   - `run_at: document_idle` ensures DOM is ready
+   - Critical for COMET DOM manipulation
+   - Reduces conflicts with page scripts
+
+**Blockers**:
+- None for manifest.json (complete and functional)
+- Icons are placeholders (not blocking development)
+
+**Next Steps**:
+1. Commit manifest.json and placeholder icons
+2. Move to `ext-typescript-setup` (tsconfig.json, build pipeline)
+3. Set up proper TypeScript strict mode configuration
+4. Configure Vite to build extension files correctly
+
+**Notes**:
+- Manifest V3 is more restrictive than V2 but necessary for Chrome Web Store
+- Service workers replace background pages (no persistent background)
+- All file paths in manifest.json will be built outputs (dist/)
+- Real icons can be added anytime without breaking functionality
+- Progressive enhancement: start minimal, add permissions only when needed
+
+---
+
 ## Template for Future Entries
 
 ```markdown

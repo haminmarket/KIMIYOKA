@@ -44,6 +44,3 @@ temp/
 # Supabase
 .branches/
 .temp/
-
-# LLM context (reference only, not for distribution)
-docs/llm-context/

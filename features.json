@@ -2,16 +2,16 @@
   {
     "id": "project-init",
     "description": "프로젝트 초기 세팅 (Git, 문서, 구조)",
-    "status": "in_progress",
-    "notes": "Started 2025-12-05. Git init, agent_docs, features.json 생성 중",
+    "status": "done",
+    "notes": "Completed 2025-12-05. Git init, agent_docs, features.json, test-scenarios.json, pushed to GitHub",
     "dependencies": [],
     "milestone": "M1"
   },
   {
     "id": "ext-manifest-basic",
     "description": "Manifest V3 기본 파일 생성 (manifest.json)",
-    "status": "todo",
-    "notes": "최소 권한만 요청, background/content/popup/options 정의",
+    "status": "done",
+    "notes": "Completed 2025-12-05. Minimal permissions (activeTab, storage), placeholder icons created",
     "dependencies": ["project-init"],
     "milestone": "M1"
   },
