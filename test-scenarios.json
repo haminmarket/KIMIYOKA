@@ -1,0 +1,727 @@
+{
+  "project": "COMET Shortcuts Chrome Extension",
+  "version": "0.1.0",
+  "lastUpdated": "2025-12-05",
+  "scenarios": [
+    {
+      "id": "install-001",
+      "category": "installation",
+      "priority": "critical",
+      "description": "Extension installs successfully in Chrome",
+      "steps": [
+        "Open chrome://extensions/",
+        "Enable Developer mode",
+        "Click 'Load unpacked'",
+        "Select dist/ folder",
+        "Verify extension appears in list",
+        "Check extension icon appears in toolbar"
+      ],
+      "passes": false
+    },
+    {
+      "id": "install-002",
+      "category": "installation",
+      "priority": "critical",
+      "description": "Extension icon is visible and clickable",
+      "steps": [
+        "Install extension",
+        "Check icon appears in toolbar",
+        "Click extension icon",
+        "Verify popup opens"
+      ],
+      "passes": false
+    },
+    {
+      "id": "popup-001",
+      "category": "functional",
+      "priority": "critical",
+      "description": "Popup opens when clicking extension icon",
+      "steps": [
+        "Click extension icon",
+        "Verify popup window appears",
+        "Check popup has correct dimensions",
+        "Verify popup shows main UI"
+      ],
+      "passes": false
+    },
+    {
+      "id": "popup-002",
+      "category": "functional",
+      "priority": "high",
+      "description": "Popup displays current domain",
+      "steps": [
+        "Navigate to youtube.com",
+        "Click extension icon",
+        "Verify popup shows 'youtube.com'",
+        "Navigate to notion.so",
+        "Click extension icon",
+        "Verify popup updates to 'notion.so'"
+      ],
+      "passes": false
+    },
+    {
+      "id": "popup-003",
+      "category": "functional",
+      "priority": "critical",
+      "description": "Popup shows login prompt when not authenticated",
+      "steps": [
+        "Ensure user is logged out",
+        "Click extension icon",
+        "Verify popup shows 'Please login' message",
+        "Check 'Login' button is visible"
+      ],
+      "passes": false
+    },
+    {
+      "id": "popup-004",
+      "category": "functional",
+      "priority": "high",
+      "description": "Popup shows workflows list when logged in",
+      "steps": [
+        "Login as test user",
+        "Navigate to youtube.com",
+        "Click extension icon",
+        "Verify workflow list is displayed",
+        "Check workflows are filtered for youtube.com"
+      ],
+      "passes": false
+    },
+    {
+      "id": "auth-001",
+      "category": "authentication",
+      "priority": "critical",
+      "description": "User can access options page",
+      "steps": [
+        "Right-click extension icon",
+        "Click 'Options'",
+        "Verify options page opens in new tab",
+        "Check options UI is displayed"
+      ],
+      "passes": false
+    },
+    {
+      "id": "auth-002",
+      "category": "authentication",
+      "priority": "critical",
+      "description": "User can login with email and password",
+      "steps": [
+        "Open options page",
+        "Enter test email in email field",
+        "Enter test password in password field",
+        "Click 'Login' button",
+        "Verify success message appears",
+        "Check user email is displayed"
+      ],
+      "passes": false
+    },
+    {
+      "id": "auth-003",
+      "category": "authentication",
+      "priority": "critical",
+      "description": "Invalid login credentials show error",
+      "steps": [
+        "Open options page",
+        "Enter invalid email",
+        "Enter invalid password",
+        "Click 'Login' button",
+        "Verify error message is displayed",
+        "Check error message is user-friendly"
+      ],
+      "passes": false
+    },
+    {
+      "id": "auth-004",
+      "category": "authentication",
+      "priority": "high",
+      "description": "User can logout successfully",
+      "steps": [
+        "Login as test user",
+        "Open options page",
+        "Click 'Logout' button",
+        "Verify confirmation message",
+        "Check user is logged out",
+        "Verify login form reappears"
+      ],
+      "passes": false
+    },
+    {
+      "id": "auth-005",
+      "category": "authentication",
+      "priority": "high",
+      "description": "Session persists across browser restarts",
+      "steps": [
+        "Login as test user",
+        "Close browser completely",
+        "Reopen browser",
+        "Click extension icon",
+        "Verify user is still logged in",
+        "Check workflows are accessible"
+      ],
+      "passes": false
+    },
+    {
+      "id": "workflow-001",
+      "category": "functional",
+      "priority": "critical",
+      "description": "Workflows are fetched from Supabase",
+      "steps": [
+        "Login as test user",
+        "Navigate to youtube.com",
+        "Open popup",
+        "Verify API call to Supabase workflows table",
+        "Check workflows are displayed",
+        "Verify correct domain filtering"
+      ],
+      "passes": false
+    },
+    {
+      "id": "workflow-002",
+      "category": "functional",
+      "priority": "high",
+      "description": "Workflow list shows correct metadata",
+      "steps": [
+        "Login as test user",
+        "Navigate to youtube.com",
+        "Open popup",
+        "Verify each workflow shows: title, summary, success rate, Free/Pro badge",
+        "Check favicon is displayed for domain"
+      ],
+      "passes": false
+    },
+    {
+      "id": "workflow-003",
+      "category": "functional",
+      "priority": "critical",
+      "description": "Free user sees only Free workflows",
+      "steps": [
+        "Login as Free user",
+        "Navigate to domain with mixed Free/Pro workflows",
+        "Open popup",
+        "Verify only Free workflows are shown",
+        "Check Pro workflows are hidden or locked"
+      ],
+      "passes": false
+    },
+    {
+      "id": "workflow-004",
+      "category": "functional",
+      "priority": "critical",
+      "description": "Pro user sees all workflows",
+      "steps": [
+        "Login as Pro user",
+        "Navigate to domain with mixed Free/Pro workflows",
+        "Open popup",
+        "Verify both Free and Pro workflows are shown",
+        "Check all workflows are clickable"
+      ],
+      "passes": false
+    },
+    {
+      "id": "workflow-005",
+      "category": "functional",
+      "priority": "high",
+      "description": "No workflows message shown for unsupported domains",
+      "steps": [
+        "Login as test user",
+        "Navigate to unsupported domain (e.g., google.com)",
+        "Open popup",
+        "Verify 'No workflows available' message",
+        "Check friendly explanation is shown"
+      ],
+      "passes": false
+    },
+    {
+      "id": "comet-001",
+      "category": "integration",
+      "priority": "critical",
+      "description": "Extension detects COMET assistant presence",
+      "steps": [
+        "Navigate to page with COMET assistant",
+        "Open COMET assistant panel",
+        "Check extension detects html[data-erp='sidecar']",
+        "Verify main#root element is found",
+        "Check #ask-input element is detected"
+      ],
+      "passes": false
+    },
+    {
+      "id": "comet-002",
+      "category": "integration",
+      "priority": "critical",
+      "description": "Workflow execution inserts prompt into COMET",
+      "steps": [
+        "Login as test user",
+        "Navigate to youtube.com with COMET",
+        "Open COMET assistant",
+        "Click 'Run' on a workflow",
+        "Verify prompt text appears in #ask-input",
+        "Check text is properly formatted"
+      ],
+      "passes": false
+    },
+    {
+      "id": "comet-003",
+      "category": "integration",
+      "priority": "high",
+      "description": "Submit button is triggered after prompt insertion",
+      "steps": [
+        "Login as test user",
+        "Open COMET assistant",
+        "Click 'Run' on a workflow",
+        "Verify prompt is inserted",
+        "Check submit button is clicked automatically",
+        "Verify COMET starts processing"
+      ],
+      "passes": false
+    },
+    {
+      "id": "comet-004",
+      "category": "integration",
+      "priority": "high",
+      "description": "Error shown when COMET is not available",
+      "steps": [
+        "Login as test user",
+        "Navigate to page without COMET",
+        "Click 'Run' on a workflow",
+        "Verify error message: 'COMET assistant not found'",
+        "Check user-friendly instructions are shown"
+      ],
+      "passes": false
+    },
+    {
+      "id": "log-001",
+      "category": "logging",
+      "priority": "critical",
+      "description": "Workflow execution is logged to Supabase",
+      "steps": [
+        "Login as test user",
+        "Click 'Run' on a workflow",
+        "Verify API call to Supabase logs table",
+        "Check log contains: user_id, workflow_id, url, domain, status",
+        "Verify timestamp is recorded"
+      ],
+      "passes": false
+    },
+    {
+      "id": "log-002",
+      "category": "logging",
+      "priority": "high",
+      "description": "Failed workflow execution logs error",
+      "steps": [
+        "Login as test user",
+        "Trigger workflow execution failure",
+        "Verify error is logged to Supabase",
+        "Check log status is 'error'",
+        "Verify error message is captured in meta"
+      ],
+      "passes": false
+    },
+    {
+      "id": "domain-001",
+      "category": "functional",
+      "priority": "high",
+      "description": "Badge shows when workflows available for domain",
+      "steps": [
+        "Login as test user",
+        "Navigate to youtube.com",
+        "Verify extension icon shows badge",
+        "Check badge displays workflow count",
+        "Navigate to unsupported domain",
+        "Verify badge disappears"
+      ],
+      "passes": false
+    },
+    {
+      "id": "domain-002",
+      "category": "functional",
+      "priority": "medium",
+      "description": "Domain extraction works for various URL formats",
+      "steps": [
+        "Navigate to https://www.youtube.com/watch?v=123",
+        "Verify domain extracted as 'youtube.com'",
+        "Navigate to https://notion.so/page/456",
+        "Verify domain extracted as 'notion.so'",
+        "Test with subdomains, paths, query params"
+      ],
+      "passes": false
+    },
+    {
+      "id": "ui-001",
+      "category": "ui",
+      "priority": "medium",
+      "description": "Popup UI is responsive and readable",
+      "steps": [
+        "Open popup",
+        "Verify minimum width is maintained",
+        "Check scrolling works for long workflow lists",
+        "Verify text is readable",
+        "Check buttons are clearly clickable"
+      ],
+      "passes": false
+    },
+    {
+      "id": "ui-002",
+      "category": "ui",
+      "priority": "medium",
+      "description": "Workflow cards display correctly",
+      "steps": [
+        "Open popup with workflows",
+        "Verify each card shows: icon, title, summary, badge",
+        "Check hover state is visible",
+        "Verify spacing is consistent",
+        "Check truncation works for long text"
+      ],
+      "passes": false
+    },
+    {
+      "id": "ui-003",
+      "category": "ui",
+      "priority": "low",
+      "description": "Loading states are shown during API calls",
+      "steps": [
+        "Login as test user",
+        "Open popup",
+        "Verify loading spinner during workflow fetch",
+        "Check skeleton/placeholder is shown",
+        "Verify loading disappears when data loads"
+      ],
+      "passes": false
+    },
+    {
+      "id": "error-001",
+      "category": "error-handling",
+      "priority": "critical",
+      "description": "Network errors are handled gracefully",
+      "steps": [
+        "Disconnect from internet",
+        "Try to login",
+        "Verify error message: 'Network error'",
+        "Reconnect internet",
+        "Verify retry works",
+        "Check no console errors"
+      ],
+      "passes": false
+    },
+    {
+      "id": "error-002",
+      "category": "error-handling",
+      "priority": "high",
+      "description": "Supabase errors show user-friendly messages",
+      "steps": [
+        "Trigger Supabase error (invalid query)",
+        "Verify technical error is not shown to user",
+        "Check user sees: 'Something went wrong'",
+        "Verify error is logged to console for debugging"
+      ],
+      "passes": false
+    },
+    {
+      "id": "error-003",
+      "category": "error-handling",
+      "priority": "high",
+      "description": "Permission errors are handled",
+      "steps": [
+        "Trigger permission denied error",
+        "Verify user sees clear message",
+        "Check instructions for resolution",
+        "Verify no extension crash"
+      ],
+      "passes": false
+    },
+    {
+      "id": "perf-001",
+      "category": "performance",
+      "priority": "medium",
+      "description": "Popup opens in under 500ms",
+      "steps": [
+        "Click extension icon",
+        "Measure time to popup display",
+        "Verify popup appears in <500ms",
+        "Check no visible lag"
+      ],
+      "passes": false
+    },
+    {
+      "id": "perf-002",
+      "category": "performance",
+      "priority": "medium",
+      "description": "Workflow fetch completes in under 2 seconds",
+      "steps": [
+        "Open popup",
+        "Measure API call duration",
+        "Verify workflows load in <2s",
+        "Check loading state is visible during fetch"
+      ],
+      "passes": false
+    },
+    {
+      "id": "security-001",
+      "category": "security",
+      "priority": "critical",
+      "description": "Service role key is never exposed",
+      "steps": [
+        "Inspect extension code in chrome://extensions/",
+        "Check dist/ files",
+        "Verify only anon key is present",
+        "Confirm service role key is not in code"
+      ],
+      "passes": false
+    },
+    {
+      "id": "security-002",
+      "category": "security",
+      "priority": "critical",
+      "description": "User credentials are securely stored",
+      "steps": [
+        "Login as test user",
+        "Inspect chrome.storage.local",
+        "Verify session token is stored",
+        "Check password is NOT stored",
+        "Verify Supabase handles session securely"
+      ],
+      "passes": false
+    },
+    {
+      "id": "security-003",
+      "category": "security",
+      "priority": "high",
+      "description": "RLS policies prevent unauthorized access",
+      "steps": [
+        "Login as user A",
+        "Try to access user B's logs",
+        "Verify access is denied",
+        "Check only own logs are visible",
+        "Confirm RLS is enforced"
+      ],
+      "passes": false
+    },
+    {
+      "id": "i18n-001",
+      "category": "localization",
+      "priority": "low",
+      "description": "Default language is set from environment",
+      "steps": [
+        "Check VITE_DEFAULT_LANG in .env",
+        "Install extension",
+        "Verify UI shows in default language",
+        "Check all strings use i18n system (future)"
+      ],
+      "passes": false
+    },
+    {
+      "id": "i18n-002",
+      "category": "localization",
+      "priority": "low",
+      "description": "Language can be switched in options",
+      "steps": [
+        "Open options page",
+        "Find language selector",
+        "Switch from English to Korean",
+        "Verify UI updates to Korean",
+        "Check persistence across sessions (future)"
+      ],
+      "passes": false
+    },
+    {
+      "id": "manifest-001",
+      "category": "configuration",
+      "priority": "critical",
+      "description": "Manifest V3 is valid and correct",
+      "steps": [
+        "Check manifest.json in dist/",
+        "Verify manifest_version is 3",
+        "Check all required fields are present",
+        "Verify permissions are minimal",
+        "Test extension loads without errors"
+      ],
+      "passes": false
+    },
+    {
+      "id": "manifest-002",
+      "category": "configuration",
+      "priority": "high",
+      "description": "Permissions are minimal and justified",
+      "steps": [
+        "Review manifest.json permissions",
+        "Verify only necessary permissions requested",
+        "Check: activeTab, storage, host_permissions",
+        "Confirm no excessive permissions"
+      ],
+      "passes": false
+    },
+    {
+      "id": "build-001",
+      "category": "build",
+      "priority": "critical",
+      "description": "Development build works",
+      "steps": [
+        "Run 'pnpm dev'",
+        "Verify build completes without errors",
+        "Check dist/ folder is created",
+        "Verify all expected files are present",
+        "Test hot reload works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "build-002",
+      "category": "build",
+      "priority": "critical",
+      "description": "Production build optimizes correctly",
+      "steps": [
+        "Run 'pnpm build'",
+        "Verify TypeScript check passes",
+        "Check build completes without errors",
+        "Verify dist/ is optimized",
+        "Check bundle sizes are reasonable"
+      ],
+      "passes": false
+    },
+    {
+      "id": "build-003",
+      "category": "build",
+      "priority": "high",
+      "description": "Environment variables are injected correctly",
+      "steps": [
+        "Set test values in .env",
+        "Run build",
+        "Check VITE_ variables are injected",
+        "Verify values are accessible in code",
+        "Confirm secrets are not in build"
+      ],
+      "passes": false
+    },
+    {
+      "id": "test-001",
+      "category": "testing",
+      "priority": "high",
+      "description": "Unit tests run successfully",
+      "steps": [
+        "Run 'pnpm test'",
+        "Verify all unit tests pass",
+        "Check test coverage is reported",
+        "Verify no test errors"
+      ],
+      "passes": false
+    },
+    {
+      "id": "test-002",
+      "category": "testing",
+      "priority": "medium",
+      "description": "COMET DOM tests pass with mock",
+      "steps": [
+        "Run COMET DOM tests",
+        "Verify mock HTML is loaded",
+        "Check input field detection works",
+        "Verify prompt insertion works",
+        "Check submit button click works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "test-003",
+      "category": "testing",
+      "priority": "medium",
+      "description": "API client tests pass with mocked fetch",
+      "steps": [
+        "Run API client tests",
+        "Verify Supabase calls are mocked",
+        "Check request format is correct",
+        "Verify response parsing works",
+        "Check error handling is tested"
+      ],
+      "passes": false
+    },
+    {
+      "id": "storage-001",
+      "category": "storage",
+      "priority": "high",
+      "description": "Chrome storage saves and retrieves data",
+      "steps": [
+        "Save test data to chrome.storage.local",
+        "Retrieve data",
+        "Verify data matches",
+        "Clear storage",
+        "Verify data is removed"
+      ],
+      "passes": false
+    },
+    {
+      "id": "storage-002",
+      "category": "storage",
+      "priority": "medium",
+      "description": "Storage sync works across devices (future)",
+      "steps": [
+        "Save data to chrome.storage.sync",
+        "Login on another device",
+        "Verify data syncs",
+        "Check settings persist"
+      ],
+      "passes": false
+    },
+    {
+      "id": "upgrade-001",
+      "category": "upgrade",
+      "priority": "medium",
+      "description": "Extension updates gracefully",
+      "steps": [
+        "Install version 0.1.0",
+        "Update to version 0.2.0",
+        "Verify extension still works",
+        "Check data is preserved",
+        "Verify no errors after update"
+      ],
+      "passes": false
+    },
+    {
+      "id": "messaging-001",
+      "category": "communication",
+      "priority": "high",
+      "description": "Background and content scripts communicate",
+      "steps": [
+        "Send message from popup to background",
+        "Verify message is received",
+        "Send response back",
+        "Check response arrives at popup",
+        "Test content script messaging"
+      ],
+      "passes": false
+    },
+    {
+      "id": "messaging-002",
+      "category": "communication",
+      "priority": "high",
+      "description": "Messages handle errors properly",
+      "steps": [
+        "Send message to non-existent receiver",
+        "Verify error is caught",
+        "Check timeout handling",
+        "Verify no extension crash"
+      ],
+      "passes": false
+    }
+  ],
+  "summary": {
+    "total": 52,
+    "passing": 0,
+    "failing": 52,
+    "categories": {
+      "installation": 2,
+      "functional": 8,
+      "authentication": 5,
+      "integration": 4,
+      "logging": 2,
+      "ui": 3,
+      "error-handling": 3,
+      "performance": 2,
+      "security": 3,
+      "localization": 2,
+      "configuration": 2,
+      "build": 3,
+      "testing": 3,
+      "storage": 2,
+      "upgrade": 1,
+      "communication": 2
+    }
+  }
+}
