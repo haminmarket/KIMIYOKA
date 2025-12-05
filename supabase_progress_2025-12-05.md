@@ -70,11 +70,9 @@
   - 테스트 계정 생성/로그인: `codexsmoke5678@proton.me` (email 확인 요구 해제 후 signUp 시 access_token 발급, user_id=`d48922a6-028d-411e-874b-6f839a9b4de7`)
   - workflows 조회 (auth) 성공: 2건 확인 (YouTube/Notion)
   - logs insert (status='started') 성공: id=`2b7183a1-1d25-4ea0-ae12-7bb5015bd609`
-  - logs update(status='success', meta 확장) 시도 → 200 응답이나 row 미변경 (RLS 정책에 update 허용 없음 추정)
+  - RLS 개선 후 logs update(status='success', meta 확장) 성공 → status 전환·메타 반영 확인
 - 다음 조치 옵션:
-  1) logs 테이블에 "자신의 행 update 허용" RLS 정책 추가, 또는 status 전환을 insert로만 처리하도록 앱/문서 수정
-  2) (선택) 서비스 롤로 admin update로 status 전환 테스트
-  3) 추가 스모크 시 `scripts/sql/supabase_smoke.sql` 사용 (auth 토큰으로 실행)
+  - 추가 조치 없음 (UPDATE 경로 정상 동작). 필요 시 서비스 롤로 admin update도 가능.
 
 ## 남은 작업 및 우선순위
 - Edge Functions 동기화 (높음): `extension-log-ingest`, `extension-check-license` 응답/검증 로직이 status/meta 스펙을 따르는지 확인하고 필요 시 수정.

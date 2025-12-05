@@ -20,6 +20,11 @@
   - `licenses_cache(id uuid pk, license_key unique, user_id fk, status, plan, current_period_end, last_synced_at)`
   - `logs(id uuid pk, license_key, created_at, type, payload jsonb; index license_key, created_at)`
     - MVP 확장 실행 로그는 `type='extension-run'`, `payload` 안에 `status/meta`를 넣는다.
+
+- RLS 요약 (MVP)
+  - `users`: 본인 조회/삽입, 업데이트는 service role만
+  - `workflows`: 인증 사용자 조회 허용, 쓰기는 service role만
+  - `logs`: 본인 행 조회/삽입 허용, **본인 행 UPDATE 허용**(policy `logs_update_own`, USING/CHECK `auth.uid() = user_id`)
 - RLS: MVP 초기엔 비활성 또는 Edge Function만 접근. 향후 켜면 정책은 역할별 최소권한으로 추가하고 문서화.
 - 변경 시 원칙: 컬럼 추가/삭제는 마이그레이션 + 타입 정의 + 샘플 데이터 동시 업데이트.
 
