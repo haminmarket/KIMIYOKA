@@ -5,8 +5,9 @@
 
 console.log('COMET Shortcuts: Popup loaded')
 
-// TODO: Import domain extractor
-// import { extractDomain } from '@/utils/domainExtractor'
+import { fetchWorkflows } from '@/api/supabaseClient'
+import { Workflow } from '@/api/types'
+import { extractDomain } from '@/utils/domainExtractor'
 
 // Get current tab info
 async function getCurrentTab() {
@@ -20,20 +21,62 @@ async function displayCurrentDomain() {
   const domainElement = document.getElementById('current-domain')
 
   if (domainElement && tab.url) {
-    // TODO: Use extractDomain() utility
-    const url = new URL(tab.url)
-    domainElement.textContent = url.hostname
+    const domain = extractDomain(tab.url) || 'unknown'
+    domainElement.textContent = domain
   }
 }
 
 // Load workflows for current domain
 async function loadWorkflows() {
-  // TODO: Get domain from current tab
-  // TODO: Query Supabase for workflows matching domain
-  // TODO: Filter by user's plan (FREE/PRO)
-  // TODO: Render workflow cards
+  const container = document.getElementById('workflows-container')
+  if (!container) return
 
-  console.log('TODO: Load workflows from Supabase')
+  container.innerHTML = '<p class="placeholder">Loading workflows...</p>'
+
+  const tab = await getCurrentTab()
+  const domain = tab.url ? extractDomain(tab.url) : null
+  if (!domain) {
+    container.innerHTML = '<p class="placeholder">Cannot determine domain</p>'
+    return
+  }
+
+  try {
+    const workflows = await fetchWorkflows(domain)
+    renderWorkflows(container, workflows)
+  } catch (err) {
+    console.error('Failed to load workflows', err)
+    container.innerHTML = '<p class="placeholder">Login required or network error</p>'
+  }
+}
+
+function renderWorkflows(container: HTMLElement, workflows: Workflow[]) {
+  if (!workflows.length) {
+    container.innerHTML = '<p class="placeholder">No shortcuts available for this domain</p>'
+    return
+  }
+
+  container.innerHTML = ''
+  workflows.forEach(wf => {
+    const card = document.createElement('div')
+    card.className = 'workflow-card'
+    card.innerHTML = `
+      <div class="workflow-head">
+        <span class="wf-title">${wf.title}</span>
+        <span class="wf-badge ${wf.plan === 'PRO' ? 'pro' : 'free'}">${wf.plan}</span>
+      </div>
+      <p class="wf-summary">${wf.summary || ''}</p>
+      <button class="run-btn" data-wid="${wf.id}">Run</button>
+    `
+    container.appendChild(card)
+  })
+
+  container.querySelectorAll<HTMLButtonElement>('.run-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const workflowId = btn.dataset.wid
+      console.log('Run workflow', workflowId)
+      // TODO: send message to content script to insert prompt & submit
+    })
+  })
 }
 
 // Handle settings button click

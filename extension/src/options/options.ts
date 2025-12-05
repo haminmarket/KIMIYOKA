@@ -5,16 +5,25 @@
 
 console.log('COMET Shortcuts: Options page loaded')
 
-// TODO: Import Supabase client
-// import { supabase } from '@/api/supabaseClient'
+import { supabase } from '@/api/supabaseClient'
 
 // Check authentication status
 async function checkAuthStatus() {
-  // TODO: Check Supabase auth session
   const authStatus = document.getElementById('auth-status')
 
-  if (authStatus) {
-    authStatus.innerHTML = '<p>Not logged in (Supabase integration pending)</p>'
+  const { data } = await supabase.auth.getSession()
+  const user = data.session?.user
+
+  if (!authStatus) return
+
+  if (user) {
+    authStatus.innerHTML = `<p>Logged in as <strong>${user.email}</strong></p><button id="logout-btn">Log Out</button>`
+    document.getElementById('logout-btn')?.addEventListener('click', async () => {
+      await supabase.auth.signOut()
+      await checkAuthStatus()
+    })
+  } else {
+    authStatus.innerHTML = '<p>Not logged in</p>'
   }
 }
 
@@ -23,15 +32,18 @@ document.getElementById('login-form')?.addEventListener('submit', async (e) => {
   e.preventDefault()
 
   const email = (document.getElementById('email') as HTMLInputElement).value
-  // @ts-ignore - password will be used when Supabase Auth is integrated
   const password = (document.getElementById('password') as HTMLInputElement).value
 
   console.log('Login attempt:', { email })
 
-  // TODO: Implement Supabase Auth login
-  // const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) {
+    alert(`Login failed: ${error.message}`)
+    return
+  }
 
-  alert('Login functionality pending Supabase integration')
+  await checkAuthStatus()
+  alert('Logged in')
 })
 
 // Initialize options page
