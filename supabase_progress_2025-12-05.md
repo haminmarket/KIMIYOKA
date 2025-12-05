@@ -65,9 +65,16 @@
   ```
 
 9) 스모크 테스트 상태 (필수)
-- 현재 실행 여부: **미실행** (로컬에 유효한 anon/auth 키 미제공 상태)
+- 실행 결과 (2025-12-05):
+  - anon REST `/workflows?select=id,title,domain,plan&limit=5` → 응답 200, 결과 `[]` (RLS로 인해 비인증 조회 불가 추정)
+  - 테스트 계정 생성 시도: `codexsmoke1234@proton.me` (signUp 200 성공, email 미확인 상태)
+  - sign-in 실패: `email_not_confirmed` (이메일 확인 필수). 서비스 롤 키 없으므로 admin create/confirm 불가.
+  - 따라서 인증 토큰을 확보하지 못해 logs insert/update 스모크는 미실행 상태.
+- 다음 조치 옵션:
+  1) 서비스 롤 키 제공 후 `auth.admin.createUser`로 이메일 확인된 테스트 계정 생성
+  2) 대시보드에서 “이메일 확인 요구”를 임시 해제 후 signIn으로 토큰 발급 → 테스트 완료 후 다시 켜기
+  3) 메일박스 접근이 가능하다면 signUp 확인 메일을 클릭해 토큰 확보
 - 실행 방법: `scripts/sql/supabase_smoke.sql` 참고 (psql에서 변수만 교체)
-- 기대 결과: anon은 workflows 조회 OK, 인증 유저는 logs started insert → success update 가능, RLS/제약 오류 없을 것
 
 ## 남은 작업 및 우선순위
 - Edge Functions 동기화 (높음): `extension-log-ingest`, `extension-check-license` 응답/검증 로직이 status/meta 스펙을 따르는지 확인하고 필요 시 수정.
