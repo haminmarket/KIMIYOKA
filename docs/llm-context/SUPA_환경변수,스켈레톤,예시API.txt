@@ -3,6 +3,8 @@
 - **공개(Public)**: 크롬 확장 `.env` 또는 `config.ts` (project ref, anon key, function base URL 등).
 - 규칙: 비밀은 빌드 산출물에 절대 포함 금지. 공개 값도 `APP_ENV` 단위로 분리해 오배포를 막는다.
 - 새 값 추가 시: `env.sample` → Supabase Dashboard → 빌드 스크립트 순으로 즉시 반영하고 기록한다.
+- **서비스 롤 키 절대 금지**: 크롬 확장/프런트엔드에 `SERVICE_ROLE_KEY`를 절대 넣지 않는다. Edge Function/서버 전용.
+- **LemonSqueezy 키 정리**: `docs/llm-context/LEMONSQUEEZY.txt` 등의 노출 키는 즉시 삭제·재발급 후 기록 업데이트.
 
 ---
 
@@ -15,6 +17,8 @@
 # Supabase 기본
 SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
+
+# 노출 금지 주석: SERVICE_ROLE_KEY는 Edge Function 전용. 브라우저/확장에 주입 금지.
 
 # LemonSqueezy 설정
 LEMONSQUEEZY_API_KEY=ls_live_XXXXXXXXXXXXXXXX
@@ -47,6 +51,7 @@ APP_ENV=development   # staging, production 만 추가
 SUPABASE_PROJECT_REF=YOUR_PROJECT_REF
 SUPABASE_ANON_KEY=your-public-anon-key-here
 SUPABASE_FUNCTION_BASE_URL=https://YOUR_PROJECT_REF.functions.supabase.co
+# 주의: 확장에는 ANON_KEY만 사용. SERVICE_ROLE_KEY는 사용 금지.
 ```
 
 ### 3-2. `config.ts` 예시

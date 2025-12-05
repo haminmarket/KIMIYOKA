@@ -38,7 +38,7 @@
   - 스키마 변경은 상위 문서(AUTH_FLOW_DECISION, PRD, COMET_DOM_SPEC) 업데이트 후에만 수행
   - 단순 로깅 포맷 변경은 `logs.meta` JSONB 안에서 처리, 새 컬럼 추가는 지양
 
-8) 빠른 검증 스크립트(수동 실행용)
+8) 빠른 검증 스모크 (수동 실행용)
 - 익명키로 workflows 읽기 (기존 정책 확인):
   ```sql
   select id, title, domain, plan from public.workflows limit 5;
@@ -63,6 +63,11 @@
   where id = '<returned id>'
   returning *;
   ```
+
+9) 스모크 테스트 상태 (필수)
+- 현재 실행 여부: **미실행** (로컬에 유효한 anon/auth 키 미제공 상태)
+- 실행 방법: `scripts/sql/supabase_smoke.sql` 참고 (psql에서 변수만 교체)
+- 기대 결과: anon은 workflows 조회 OK, 인증 유저는 logs started insert → success update 가능, RLS/제약 오류 없을 것
 
 ## 남은 작업 및 우선순위
 - Edge Functions 동기화 (높음): `extension-log-ingest`, `extension-check-license` 응답/검증 로직이 status/meta 스펙을 따르는지 확인하고 필요 시 수정.
