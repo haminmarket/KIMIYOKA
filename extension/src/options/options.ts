@@ -6,6 +6,7 @@
 console.log('COMET Shortcuts: Options page loaded')
 
 import { supabase } from '@/api/supabaseClient'
+import { SUPABASE_URL } from '@/config'
 
 // Check authentication status
 async function checkAuthStatus() {
@@ -48,3 +49,9 @@ document.getElementById('login-form')?.addEventListener('submit', async (e) => {
 
 // Initialize options page
 checkAuthStatus()
+
+// Debug info (non-sensitive)
+const info = document.createElement('p')
+info.className = 'env-hint'
+info.textContent = `Project: ${SUPABASE_URL}`
+document.querySelector('main')?.appendChild(info)
