@@ -18,7 +18,6 @@ async function getCurrentTab() {
 // Display current domain
 let currentDomain: string | null = null
 let currentTabUrl: string | null = null
-let currentWorkflows: Workflow[] = []
 let currentLogId: string | null = null
 let currentUserPlan: 'FREE' | 'PRO' = 'FREE'
 
@@ -46,6 +45,11 @@ async function loadWorkflows() {
 
   container.innerHTML = '<p class="placeholder">Loading workflows...</p>'
 
+  if (!supabase) {
+    container.innerHTML = '<p class="placeholder">Supabase env not configured. Check .env.</p>'
+    return
+  }
+
   const user = await getSessionUser()
   if (!user) {
     container.innerHTML = '<p class="placeholder">Please log in from Options</p>'
@@ -58,7 +62,8 @@ async function loadWorkflows() {
       .select('plan')
       .eq('id', user.id)
       .single()
-    if (!error && data?.plan) currentUserPlan = data.plan as 'FREE' | 'PRO'
+    const plan = (data as any)?.plan as 'FREE' | 'PRO' | undefined
+    if (!error && plan) currentUserPlan = plan
   } catch (e) {
     console.warn('Could not fetch user plan; defaulting FREE', e)
     currentUserPlan = 'FREE'
@@ -73,7 +78,6 @@ async function loadWorkflows() {
 
   try {
     const workflows = await fetchWorkflows(domain)
-    currentWorkflows = workflows
     renderWorkflows(container, workflows)
     await setBadge(workflows.length)
   } catch (err) {
@@ -118,7 +122,7 @@ function renderWorkflows(container: HTMLElement, workflows: Workflow[]) {
 
 async function runWorkflow(workflow: Workflow, btn: HTMLButtonElement) {
   const tab = await getCurrentTab()
-  if (!tab.id) return
+  if (tab.id === undefined) return
 
   const user = await getSessionUser()
   if (!user) {
@@ -142,7 +146,7 @@ async function runWorkflow(workflow: Workflow, btn: HTMLButtonElement) {
   btn.disabled = true
   btn.textContent = 'Running...'
 
-  chrome.tabs.sendMessage(tab.id, { type: 'CHECK_COMET' }, async (check) => {
+  chrome.tabs.sendMessage(tab.id!, { type: 'CHECK_COMET' }, async (check) => {
     if (chrome.runtime.lastError || !check?.cometAvailable) {
       alert('COMET assistant not found on this page')
       await updateLogStatusSafe('error', { errorMessage: 'COMET not available' })
@@ -151,7 +155,7 @@ async function runWorkflow(workflow: Workflow, btn: HTMLButtonElement) {
       return
     }
 
-    chrome.tabs.sendMessage(tab.id, { type: 'RUN_WORKFLOW', prompt: workflow.prompt, logId: currentLogId, startedAt }, async (resp) => {
+    chrome.tabs.sendMessage(tab.id!, { type: 'RUN_WORKFLOW', prompt: workflow.prompt, logId: currentLogId, startedAt }, async (resp) => {
       if (chrome.runtime.lastError) {
         console.error('Message failed', chrome.runtime.lastError)
         alert('Failed to reach content script (is COMET tab loaded?)')

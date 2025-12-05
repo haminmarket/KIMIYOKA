@@ -12,6 +12,11 @@ import { SUPABASE_URL } from '@/config'
 async function checkAuthStatus() {
   const authStatus = document.getElementById('auth-status')
 
+  if (!supabase) {
+    if (authStatus) authStatus.innerHTML = '<p>Supabase env not configured</p>'
+    return
+  }
+
   const { data } = await supabase.auth.getSession()
   const user = data.session?.user
 
