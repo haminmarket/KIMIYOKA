@@ -32,7 +32,13 @@
   - `logs.status` 체크 제약: `started | success | error | timeout`
   - `logs.meta` 컬럼 주석: turns, duration_ms, final_goal_text, timeline_snippet, errorMessage, source
 
-7) 빠른 검증 스크립트(수동 실행용)
+7) 문서 동결 규칙 추가 (2025-12-05 19:05)
+- `SUPABASE_RULE.txt`에 스키마 동결 문구 추가:
+  - MVP 스키마(users/workflows/logs)는 동결 상태
+  - 스키마 변경은 상위 문서(AUTH_FLOW_DECISION, PRD, COMET_DOM_SPEC) 업데이트 후에만 수행
+  - 단순 로깅 포맷 변경은 `logs.meta` JSONB 안에서 처리, 새 컬럼 추가는 지양
+
+8) 빠른 검증 스크립트(수동 실행용)
 - 익명키로 workflows 읽기 (기존 정책 확인):
   ```sql
   select id, title, domain, plan from public.workflows limit 5;
@@ -58,8 +64,9 @@
   returning *;
   ```
 
-## 남은 작업 제안
-- `claude-progress.md`에 Fifth Session 내용 수동 반영 필요(타임아웃으로 미반영)
-- Edge Functions: MVP에서는 로그용 함수 불필요, Phase 2에서 license/webhook 분리 예정
-- 환경변수/키 정리: LemonSqueezy 키 노출 파일 제거 및 재발급 필요 (`docs/llm-context/LEMONSQUEEZY.txt`)
-- 계약 테스트 추가: anon 키로 `workflows` read, 인증 유저로 `logs` insert 확인 스크립트 준비
+## 남은 작업 및 우선순위
+- Edge Functions 동기화 (높음): `extension-log-ingest`, `extension-check-license` 응답/검증 로직이 status/meta 스펙을 따르는지 확인하고 필요 시 수정.
+- 로컬/스테이징 스모크 테스트 (높음): anon 키로 `workflows` read, 인증 세션으로 logs started→success 업데이트 수행(위 SQL) 후 RLS/제약 확인.
+- DDL 파일화 (중간): 현재 스키마를 `infra/supabase/migrations/001_init.sql` 등으로 버전 관리해 재현성 확보.
+- 환경변수/키 정리 (중간): `docs/llm-context/LEMONSQUEEZY.txt` 노출 키 제거 및 재발급, ENV 가이드 업데이트.
+- 시드/데이터 관리 (낮음): workflows 시드 확장 시 JSON/SQL 템플릿 작성.
