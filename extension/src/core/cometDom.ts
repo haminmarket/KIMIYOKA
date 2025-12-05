@@ -5,8 +5,9 @@
 
 export interface CometDom {
   isOpen: () => boolean
-  insertPrompt: (text: string) => void
-  submit: () => void
+  waitForElement: (selector: string, timeoutMs?: number) => Promise<Element | null>
+  insertPrompt: (text: string) => Promise<void>
+  submit: () => Promise<void>
   getQueryTitle: () => string | null
   getTimeline: () => string[]
   getFinalGoalText: () => string | null
@@ -25,22 +26,49 @@ export const cometDom: CometDom = {
     return Boolean(input)
   },
 
-  insertPrompt(text: string) {
-    const input = document.querySelector<HTMLInputElement | HTMLElement>(INPUT_SELECTOR)
+  async waitForElement(selector: string, timeoutMs = 10000): Promise<Element | null> {
+    const existing = document.querySelector(selector)
+    if (existing) return existing
+
+    return await new Promise((resolve) => {
+      const timer = window.setTimeout(() => {
+        observer.disconnect()
+        resolve(null)
+      }, timeoutMs)
+
+      const observer = new MutationObserver(() => {
+        const el = document.querySelector(selector)
+        if (el) {
+          clearTimeout(timer)
+          observer.disconnect()
+          resolve(el)
+        }
+      })
+      observer.observe(document.body, { childList: true, subtree: true })
+    })
+  },
+
+  async insertPrompt(text: string) {
+    const input = (await this.waitForElement(INPUT_SELECTOR)) || (await this.waitForElement(INPUT_FALLBACK))
     if (!input) throw new Error('COMET input not found')
 
-    input.innerHTML = ''
-    const p = document.createElement('p')
-    p.setAttribute('dir', 'auto')
-    p.textContent = text
-    input.appendChild(p)
+    ;(input as HTMLElement).focus()
+
+    const success = document.execCommand('insertText', false, text)
+    if (!success) {
+      input.innerHTML = ''
+      const p = document.createElement('p')
+      p.setAttribute('dir', 'auto')
+      p.textContent = text
+      input.appendChild(p)
+    }
 
     input.dispatchEvent(new Event('input', { bubbles: true }))
     input.dispatchEvent(new Event('change', { bubbles: true }))
   },
 
-  submit() {
-    const button = document.querySelector<HTMLButtonElement>(SUBMIT_SELECTOR)
+  async submit() {
+    const button = (await this.waitForElement(SUBMIT_SELECTOR)) as HTMLButtonElement | null
     if (!button) throw new Error('Submit button not found')
     if (button.disabled) throw new Error('Submit button disabled')
     button.click()

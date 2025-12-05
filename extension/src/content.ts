@@ -49,29 +49,34 @@ function observeFinalGoal(logId?: string, startedAt?: number) {
 // Listen for messages from popup/background
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   console.log('Content script received message:', message)
+  const handler = async () => {
+    if (message.type === 'INSERT_PROMPT') {
+      await cometDom.insertPrompt(message.prompt || '')
+      await cometDom.submit()
+      return { success: true }
+    }
 
-  if (message.type === 'INSERT_PROMPT') {
-    try {
-      cometDom.insertPrompt(message.prompt || '')
-      cometDom.submit()
-      sendResponse({ success: true })
-    } catch (err) {
-      console.error(err)
-      sendResponse({ success: false, error: (err as Error).message })
+    if (message.type === 'CHECK_COMET') {
+      return { cometAvailable: cometDom.isOpen() }
     }
-  } else if (message.type === 'CHECK_COMET') {
-    sendResponse({ cometAvailable: cometDom.isOpen() })
-  } else if (message.type === 'RUN_WORKFLOW') {
-    try {
+
+    if (message.type === 'RUN_WORKFLOW') {
       if (!cometDom.isOpen()) throw new Error('COMET assistant not found')
-      cometDom.insertPrompt(message.prompt || '')
-      cometDom.submit()
+      await cometDom.insertPrompt(message.prompt || '')
+      await cometDom.submit()
       observeFinalGoal(message.logId, message.startedAt)
-      sendResponse({ success: true })
-    } catch (err) {
-      sendResponse({ success: false, error: (err as Error).message })
+      return { success: true }
     }
+
+    return { success: true }
   }
+
+  handler()
+    .then((res) => sendResponse(res))
+    .catch((err: Error) => {
+      console.error(err)
+      sendResponse({ success: false, error: err.message })
+    })
 
   return true
 })
