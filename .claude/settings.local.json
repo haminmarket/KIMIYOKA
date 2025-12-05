@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nchore: 프로젝트 초기 세팅\n\n프로젝트 구조 및 기본 설정 파일 생성\n\n- Git repository 초기화 및 .gitignore 추가\n- Progressive Disclosure 문서 세트 생성\n  - agent_docs/building_the_project.md\n  - agent_docs/running_tests.md\n  - agent_docs/feature_checklist_guide.md\n- features.json 생성 (30개 기능, 4개 마일스톤)\n- claude-progress.md 개발 로그 시작\n- 디렉토리 구조 생성 (extension/, tests/)\n- 설정 파일 추가\n  - package.json (root + extension)\n  - tsconfig.json\n  - vitest.config.ts\n  - eslint, prettier 설정\n- 테스트 fixtures 추가\n  - mockCometDom.html\n  - sampleWorkflows.json\n- README.md 작성\n\n주요 결정사항:\n- Auth: Supabase Auth 사용 (LemonSqueezy는 Phase 2)\n- COMET: Mock-first 접근, 실제 DOM 스펙 대기\n- Testing: Vitest + jsdom, E2E는 나중에\n\nMilestone: M1\nFeatures: project-init\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []

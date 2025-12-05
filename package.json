@@ -1,23 +1,23 @@
 {
   "name": "comet-shortcuts-extension",
   "version": "0.1.0",
-  "description": "웹에이전트 숏컷 크롬 확장 - COMET 어시스턴트와 연동하여 도메인별 워크플로우를 실행합니다",
+  "description": "COMET Shortcuts Chrome Extension - Domain-specific workflow shortcuts for COMET assistant",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm --filter extension dev",
-    "build": "pnpm --filter extension build",
-    "typecheck": "pnpm --filter extension typecheck",
+    "dev": "vite build --watch --mode development",
+    "build": "tsc --noEmit && vite build --mode production",
+    "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
-    "lint": "eslint .",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "clean": "rimraf extension/dist tests/coverage"
+    "lint": "eslint extension/src tests",
+    "lint:fix": "eslint extension/src tests --fix",
+    "format": "prettier --write \"**/*.{ts,js,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,js,json,md}\"",
+    "pack": "pnpm build && cd dist && zip -r ../extension.zip .",
+    "clean": "rimraf dist coverage"
   },
-  "workspaces": [
-    "extension"
-  ],
   "devDependencies": {
     "@types/chrome": "^0.0.254",
     "@types/node": "^20.10.5",
@@ -30,6 +30,7 @@
     "rimraf": "^5.0.5",
     "typescript": "^5.3.3",
     "vite": "^5.0.8",
+    "vite-plugin-static-copy": "^1.0.0",
     "vitest": "^1.0.4"
   },
   "engines": {

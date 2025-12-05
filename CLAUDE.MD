@@ -1,312 +1,147 @@
-\# CLAUDE.md
+# CLAUDE.md
 
+## WHAT – Project Map
 
+This repo is a **Chrome extension + Supabase backend** project.
 
-\## WHAT – Project Map
+The product is a browser extension that surfaces domain-specific "web-agent shortcuts" (pre-built prompts) and runs them via COMET assistant, while logging usage to Supabase.
 
+**Tech stack (1-year MVP scope)**
 
+- Client:
+  - Chrome Extension (Manifest V3)
+  - TypeScript + vanilla JS/HTML/CSS (no React for now)
+- Backend / Data:
+  - Supabase (Postgres + Auth + RLS)
+  - API calls from extension (no separate Node server)
+- Tooling:
+  - Node.js (v18+)
+  - pnpm (package manager)
+  - Vitest for tests
 
-This repo is a \*\*“Chrome extension + Supabase backend”\*\* project.
+**Directory layout**
 
+- `extension/src/` - Chrome extension source
+  - Popup UI, background/service worker, content script, options page
+  - Supabase client + API helpers
+- `tests/` - Unit/integration tests
+- `dist/` - Build output (git-ignored)
+- `docs/llm-context/` - LLM development context docs (reference only)
+- `agent_docs/` - Progressive Disclosure docs for development workflow
+- `features.json` - Feature checklist & status (source of truth)
+- `claude-progress.md` - Per-session work log
 
-
-The product is a browser extension that surfaces domain-specific “web-agent shortcuts” (pre-built prompts) and runs them via COMET, while logging usage to Supabase.
-
-
-
-\*\*Tech stack (1-year MVP scope)\*\*
-
-
-
-\- Client:  
-
-&nbsp; - Chrome Extension (Manifest V3)  
-
-&nbsp; - TypeScript + vanilla JS/HTML/CSS (no React for now)
-
-\- Backend / Data:
-
-&nbsp; - Supabase (Postgres + Auth + RLS)
-
-&nbsp; - `@supabase/supabase-js` from the extension (no separate Node server)
-
-\- Tooling:
-
-&nbsp; - Node.js
-
-&nbsp; - pnpm (or npm/yarn, but assume `pnpm` by default)
-
-&nbsp; - Vitest/Jest for tests (when added)
-
-
-
-\*\*Directory layout (intended)\*\*
-
-
-
-\- `extension/`
-
-&nbsp; - Chrome extension source
-
-&nbsp; - Popup UI, background/service worker, content script, options page
-
-&nbsp; - Supabase client + simple API helpers
-
-\- `supabase/`
-
-&nbsp; - SQL migrations for:
-
-&nbsp;   - `workflows` (shortcut definitions)
-
-&nbsp;   - `logs` (execution history)
-
-&nbsp;   - optional `pins` (favorites)
-
-&nbsp; - RLS policies
-
-\- `tests/`
-
-&nbsp; - Unit/integration/e2e tests for the extension and basic data flows
-
-\- `features.json`
-
-&nbsp; - Feature checklist \& status (source of truth for what’s in/out)
-
-\- `claude-progress.md`
-
-&nbsp; - Per-session work log / what changed
-
-
-
-Do \*\*not\*\* dump detailed implementation docs here. This file is just the “map” so you (Claude) know where you are and what this repo is for.
-
-
+Do **not** dump detailed implementation docs here. This file is the "map" so you (Claude) know where you are and what this repo is for.
 
 ---
 
+## WHY – Product Purpose & Core Flows
 
-
-\## WHY – Product Purpose \& Core Flows
-
-
-
-\### Purpose
-
-
+### Purpose
 
 This service exists to:
 
+- Show users **which web-agent shortcuts are available on the current domain** (YouTube, Notion, etc.)
+- Let them **run a chosen shortcut with one click**, by injecting a pre-defined prompt into the COMET assistant's input
+- **Log every run** (who ran what, where, and how it went) to Supabase
 
+All shortcuts (prompts, expected outcome, domain, plan) live in Supabase.
+The extension is a thin client that authenticates users and executes workflows.
 
-\- Show users \*\*which web-agent shortcuts are available on the current domain\*\* (YouTube, Notion, etc.), based on templates stored in Supabase.
+### Core User Flows (MVP)
 
-\- Let them \*\*run a chosen shortcut with one click\*\*, by injecting a pre-defined prompt into the COMET assistant’s input DOM.
+1. **Browse → See shortcuts for this site**
+   - User installs extension and logs in via Supabase Auth
+   - User visits a supported domain
+   - Extension shows available shortcuts in popup
+   - Non-logged-in users see list but must login to run
 
-\- \*\*Log every run\*\* (who ran what, where, and how it went) into Supabase for later analysis and productization.
+2. **Run shortcut → COMET prompt injection → log**
+   - User clicks "Run" on a shortcut
+   - Extension finds COMET's input field
+   - Inserts prompt and triggers submission
+   - Logs execution to Supabase
 
-
-
-All shortcuts (prompts, expected outcome, domain, plan) live in Supabase.  
-
-The extension is a thin client that:
-
-
-
-\- authenticates the user via Supabase Auth,
-
-\- reads `workflows`,
-
-\- writes to `logs`.
-
-
-
-\### Core User Flows (MVP)
-
-
-
-1\. \*\*Browse → See shortcuts for this site\*\*
-
-
-
-&nbsp;  - User installs the extension and logs in (Supabase Auth) via popup/options.
-
-&nbsp;  - User visits `https://some-domain.com`.
-
-&nbsp;  - Extension reads the current domain, queries `workflows` filtered by `domain`.
-
-&nbsp;  - In the popup, user sees a list:
-
-&nbsp;    - title, summary (what it does / expected outcome),
-
-&nbsp;    - favicon for that domain,
-
-&nbsp;    - success rate,
-
-&nbsp;    - Free/Pro badge,
-
-&nbsp;    - “Run” button.
-
-&nbsp;  - Non-logged-in users can see the list but must log in to run.
-
-
-
-2\. \*\*Run shortcut → COMET prompt injection → log\*\*
-
-
-
-&nbsp;  - User clicks “Run” on a shortcut.
-
-&nbsp;  - Extension (content script) finds COMET’s assistant input DOM.
-
-&nbsp;  - The shortcut’s `prompt` from Supabase is inserted into that input field
-
-&nbsp;    (ideally auto-submit; otherwise user presses Enter).
-
-&nbsp;  - Extension writes an entry to `logs`:
-
-&nbsp;    - `user\_id`, `workflow\_id`, `url`, `domain`, `status` (success/error),
-
-&nbsp;    - `ran\_at`, and `meta` (turn count, etc. when available).
-
-
-
-3\. \*\*Domain visit → “Shortcuts available” indicator\*\*
-
-
-
-&nbsp;  - User navigates to a supported domain (e.g., `youtube.com`).
-
-&nbsp;  - Extension checks Supabase for available `workflows` on that domain.
-
-&nbsp;  - If any exist, show a small signal:
-
-&nbsp;    - badge on the extension icon and/or
-
-&nbsp;    - lightweight in-page notification that shortcuts are available.
-
-&nbsp;  - Clicking it opens the popup with the filtered shortcut list.
-
-
-
-That’s enough context for you to understand \*\*why\*\* the code exists and what matters:
-
-\- Do not invent complex dashboards or servers.
-
-\- Stick to: \*\*extension ↔ Supabase tables (`workflows`, `logs`)\*\*.
-
-
+3. **Domain visit → "Shortcuts available" indicator**
+   - User navigates to supported domain
+   - Extension checks for available shortcuts
+   - Shows badge or notification if shortcuts exist
 
 ---
 
+## HOW – Commands & Conventions
 
+### Dev / Build
 
-\## HOW – Commands \& Conventions
+- **Extension dev (watch mode)**
+  ```bash
+  pnpm dev
+  ```
 
+- **Extension build (production)**
+  ```bash
+  pnpm build
+  ```
 
+- **Package extension**
+  ```bash
+  pnpm pack
+  # Creates extension.zip in project root
+  ```
 
-\### Dev / Build
+### Tests
 
+- **Unit tests**
+  ```bash
+  pnpm test
+  ```
 
+- **Watch mode**
+  ```bash
+  pnpm test:watch
+  ```
 
-\- \*\*Extension dev (HMR or rebuild)\*\*  
+- **Coverage**
+  ```bash
+  pnpm test:coverage
+  ```
 
-&nbsp; ```bash
+### Code Quality
 
-&nbsp; cd extension
+- **Lint**
+  ```bash
+  pnpm lint
+  pnpm lint:fix
+  ```
 
-&nbsp; pnpm dev       # or: pnpm watch / npm run dev (check package.json)
+- **Format**
+  ```bash
+  pnpm format
+  pnpm format:check
+  ```
 
-````
+### Extra Pointers
 
+For detailed build/test behavior, see:
+- `agent_docs/building_the_project.md`
+- `agent_docs/running_tests.md`
 
+For feature scope and current status, use **`features.json`** as the primary source.
 
-\* \*\*Extension build (for packing into a .zip)\*\*
+Follow existing code style and linter/formatter rules.
 
+Keep the stack **simple**:
+- No new major frameworks unless absolutely necessary
+- Extension stays thin: Auth via Supabase, DOM injection for COMET
 
+---
 
-&nbsp; ```bash
+## Multi-language Support
 
-&nbsp; cd extension
+This extension supports **English (en)** and **Korean (ko)**.
 
-&nbsp; pnpm build
-
-&nbsp; ```
-
-
-
-\### Tests
-
-
-
-\* \*\*Unit / integration tests\*\*
-
-
-
-&nbsp; ```bash
-
-&nbsp; pnpm test
-
-&nbsp; ```
-
-
-
-\* \*\*e2e tests (if/when added)\*\*
-
-
-
-&nbsp; ```bash
-
-&nbsp; pnpm test:e2e
-
-&nbsp; # internally may call scripts/run\_e2e\_tests.sh
-
-&nbsp; ```
-
-
-
-\### Extra pointers for you (Claude)
-
-
-
-\* For detailed build/test behavior, prefer:
-
-
-
-&nbsp; \* `agent\_docs/building\_the\_project.md`
-
-&nbsp; \* `agent\_docs/running\_tests.md`
-
-\* For feature scope and current status, use \*\*`features.json` as the primary source\*\*.
-
-\* Follow existing code style and whatever the linter/formatter enforces:
-
-
-
-&nbsp; \* \*\*Do not\*\* invent new style rules here.
-
-&nbsp; \* Infer from current files and tooling.
-
-
-
-Keep the stack \*\*simple\*\*:
-
-
-
-\* No new major frameworks unless absolutely necessary.
-
-\* Extension stays thin:
-
-
-
-&nbsp; \* Auth via `@supabase/supabase-js`.
-
-&nbsp; \* `workflows` read, `logs` write.
-
-&nbsp; \* DOM injection into COMET for running shortcuts.
-
-
-
-```
-
-::contentReference\[oaicite:0]{index=0}
-
+- Default language: English
+- Language switching in options page
+- All UI strings use i18n system (to be implemented)
+- Documentation primarily in English
+- PRD and context docs may be in Korean (for LLM reference)
