@@ -20,6 +20,7 @@ let currentDomain: string | null = null
 let currentTabUrl: string | null = null
 let currentWorkflows: Workflow[] = []
 let currentLogId: string | null = null
+let currentUserPlan: 'FREE' | 'PRO' = 'FREE'
 
 async function getSessionUser() {
   const { data } = await supabase.auth.getSession()
@@ -51,6 +52,18 @@ async function loadWorkflows() {
     return
   }
 
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('plan')
+      .eq('id', user.id)
+      .single()
+    if (!error && data?.plan) currentUserPlan = data.plan as 'FREE' | 'PRO'
+  } catch (e) {
+    console.warn('Could not fetch user plan; defaulting FREE', e)
+    currentUserPlan = 'FREE'
+  }
+
   const tab = await getCurrentTab()
   const domain = tab.url ? extractDomain(tab.url) : null
   if (!domain) {
@@ -62,6 +75,7 @@ async function loadWorkflows() {
     const workflows = await fetchWorkflows(domain)
     currentWorkflows = workflows
     renderWorkflows(container, workflows)
+    await setBadge(workflows.length)
   } catch (err) {
     console.error('Failed to load workflows', err)
     container.innerHTML = '<p class="placeholder">Login required or network error</p>'
@@ -76,6 +90,7 @@ function renderWorkflows(container: HTMLElement, workflows: Workflow[]) {
 
   container.innerHTML = ''
   workflows.forEach(wf => {
+    const locked = wf.plan === 'PRO' && currentUserPlan !== 'PRO'
     const card = document.createElement('div')
     card.className = 'workflow-card'
     card.innerHTML = `
@@ -84,7 +99,9 @@ function renderWorkflows(container: HTMLElement, workflows: Workflow[]) {
         <span class="wf-badge ${wf.plan === 'PRO' ? 'pro' : 'free'}">${wf.plan}</span>
       </div>
       <p class="wf-summary">${wf.summary || ''}</p>
-      <button class="run-btn" data-wid="${wf.id}">Run</button>
+      <button class="run-btn" data-wid="${wf.id}" ${locked ? 'disabled' : ''}>
+        ${locked ? 'Pro only' : 'Run'}
+      </button>
     `
     container.appendChild(card)
   })
@@ -121,7 +138,8 @@ async function runWorkflow(workflow: Workflow) {
     console.error('Failed to log started', err)
   }
 
-  chrome.tabs.sendMessage(tab.id, { type: 'RUN_WORKFLOW', prompt: workflow.prompt }, async (resp) => {
+  const startedAt = Date.now()
+  chrome.tabs.sendMessage(tab.id, { type: 'RUN_WORKFLOW', prompt: workflow.prompt, logId: currentLogId, startedAt }, async (resp) => {
     if (chrome.runtime.lastError) {
       console.error('Message failed', chrome.runtime.lastError)
       alert('Failed to reach content script (is COMET tab loaded?)')
@@ -144,6 +162,10 @@ async function updateLogStatusSafe(status: 'success' | 'error', meta: any) {
   } catch (err) {
     console.error('Failed to update log status', err)
   }
+}
+
+async function setBadge(count: number) {
+  chrome.runtime.sendMessage({ type: 'SET_BADGE', count }).catch(() => {})
 }
 
 // Handle settings button click
