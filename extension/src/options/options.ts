@@ -25,6 +25,7 @@ async function checkAuthStatus() {
   if (user) {
     authStatus.innerHTML = `<p>Logged in as <strong>${user.email}</strong></p><button id="logout-btn">Log Out</button>`
     document.getElementById('logout-btn')?.addEventListener('click', async () => {
+      if (!supabase) return
       await supabase.auth.signOut()
       await checkAuthStatus()
     })
@@ -41,6 +42,11 @@ document.getElementById('login-form')?.addEventListener('submit', async (e) => {
   const password = (document.getElementById('password') as HTMLInputElement).value
 
   console.log('Login attempt:', { email })
+
+  if (!supabase) {
+    alert('Supabase env not configured')
+    return
+  }
 
   const { error } = await supabase.auth.signInWithPassword({ email, password })
   if (error) {

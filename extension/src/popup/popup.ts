@@ -22,6 +22,7 @@ let currentLogId: string | null = null
 let currentUserPlan: 'FREE' | 'PRO' = 'FREE'
 
 async function getSessionUser() {
+  if (!supabase) return null
   const { data } = await supabase.auth.getSession()
   return data.session?.user || null
 }
