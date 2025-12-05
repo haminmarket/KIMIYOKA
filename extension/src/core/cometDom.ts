@@ -13,6 +13,7 @@ export interface CometDom {
 }
 
 const INPUT_SELECTOR = '#ask-input[role="textbox"][contenteditable="true"]'
+const INPUT_FALLBACK = '#ask-input[contenteditable="true"]'
 const SUBMIT_SELECTOR = 'button[data-testid="submit-button"]'
 // Use attribute contains selector to avoid CSS escape issues with class "group/goal"
 const TIMELINE_SELECTOR = 'div[role="listitem"][class*="group/goal"]'
@@ -20,11 +21,8 @@ const FINAL_GOAL_SELECTOR = 'div[role="listitem"]#final-goal'
 
 export const cometDom: CometDom = {
   isOpen() {
-    return (
-      document.documentElement.getAttribute('data-erp') === 'sidecar' &&
-      !!document.getElementById('root') &&
-      !!document.querySelector(INPUT_SELECTOR)
-    )
+    const input = document.querySelector(INPUT_SELECTOR) || document.querySelector(INPUT_FALLBACK)
+    return Boolean(input)
   },
 
   insertPrompt(text: string) {
