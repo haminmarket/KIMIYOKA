@@ -354,6 +354,40 @@ To manually test in Chrome:
 1. 필요 시 Supabase 마이그레이션/함수 코드에 status/meta 필드 반영 여부 점검.
 2. extension 로깅 구현 시 `status="started"` 선기록 → DOM 관찰 후 업데이트 플로우 연결.
 3. README 혹은 dev 가이드에 간단한 로깅 흐름 다이어그램 추가 고려 (선택).
+
+---
+
+## 2025-12-05 (Fifth Session)
+
+### Session: Supabase RLS + Chrome 확장 기본 연동
+
+**Features Completed**:
+- `logs` self-update RLS 적용 (started→success/error 업데이트 허용)
+- `codex_task_plan` Phase 2 세분화 및 프론트 작업 착수
+
+**Changes**:
+- Supabase: 정책 `logs_update_own` 추가, smoke 재검증 (started→success/meta 업데이트 성공)
+- Frontend wiring:
+  - config/env + Supabase 클라이언트/타입 추가
+  - popup: 도메인 추출, Supabase fetch, Free/Pro 필터링, 실행 시 logs started insert → content 실행 → final-goal 감지 후 status/meta 업데이트, 배지 표시
+  - options: Supabase Auth 로그인/로그아웃 동작
+  - content: cometDom 사용해 prompt insert/submit, MutationObserver로 `#final-goal` 감지해 background에 status/meta 전달
+  - background: 배지 설정, FINAL_GOAL 메시지 수신해 logs 업데이트
+  - cometDom helper + domainExtractor + Vitest 테스트 추가
+- test: `npm test`(Vitest) 통과 (domainExtractor, cometDom 테스트)
+
+**Commits**:
+- fa09587 (logs RLS 문서화), 06ac34a (Supabase client/config), ec96c09 (cometDom + popup/options wiring), 81e85a0 (popup run flow), 43244c3 (logs started/success flow), cda0514 (plan-aware UI, badge, final-goal observer, tests)
+
+**Key Decisions**:
+- logs 업데이트는 사용자 본인 RLS 허용으로 처리, 별도 service role 경로 불필요
+- final-goal DOM 감지로 status/meta 결정, 실패 키워드·타임아웃 적용
+- Free/Pro 필터링을 클라이언트에서 단순히 plan 비교로 처리(MVP)
+
+**Blockers/Next**:
+- Edge Functions 실제 계약 확인 및 sendLog 교체 필요
+- COMET 미가용/타임아웃 시 UX 메시지 개선 필요
+- test-scenarios passes 갱신(가능 항목: log-001/comet-005 등) 미완료
 ---
 
 ## Template for Future Entries
