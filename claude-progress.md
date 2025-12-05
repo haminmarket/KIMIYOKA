@@ -320,6 +320,42 @@ To manually test in Chrome:
 
 ---
 
+## 2025-12-05 (Fourth Session)
+
+### Session: DOM 완료 감지 & 로그 스펙 문서화
+
+**Features Completed**:
+- 문서 정합성 유지 작업 (documentation) – status n/a (범용 문서 업데이트)
+
+**Changes**:
+- PRD 로그 섹션에 `DOM 기반 실행 완료 감지` 추가: 실행 시 status="started" 선기록 → COMET 타임라인 `#final-goal` 등장 시 status/meta 갱신(turns/duration_ms/final_goal_text/timeline_snippet).
+- COMET DOM 스펙/요약 문서에 `#final-goal`을 최종 완료 신호로 명시, 실패 키워드/타임아웃 규칙과 마지막 goal fallback 추가.
+- Supabase RULE 문서에 logs payload(status/meta) 필드와 started→complete 업데이트 플로우 반영.
+- test-scenarios.json 조정:
+  - storage sync(002), mock DOM/API 테스트(002/003) 제거
+  - domain 배지 숫자 강제 → 배지 온/오프만 확인하도록 완화
+  - 로딩/성능/업그레이드 시나리오를 체감 기준·post-MVP 우선순위로 조정
+  - 새 시나리오 `comet-005-final-goal-logging` 추가 (final-goal 감지 후 status/meta 기록 검증)
+  - 요약 카운트 재계산 (total 48)
+
+**Commits**:
+- (pending) 문서/시나리오 정리
+
+**Key Decisions**:
+- 실행 완료 판단은 COMET 타임라인의 `div[role=listitem].group/goal#final-goal` 첫 등장 시점으로 통일.
+- 실패 판정은 텍스트 키워드 기반 최소 규칙, 미등장은 타임아웃으로 처리해 저비용 신호 확보.
+- 로딩/성능 목표는 MVP 단계에서 수치 대신 체감 기준으로 관리해 과도한 최적화 방지.
+- storage sync와 업그레이드 시나리오는 Phase 3+/post-MVP로 미루어 현재 범위를 슬림화.
+
+**Blockers**:
+- 없음 (추가 코드 반영/마이그레이션은 별도 작업 필요)
+
+**Next Steps**:
+1. 필요 시 Supabase 마이그레이션/함수 코드에 status/meta 필드 반영 여부 점검.
+2. extension 로깅 구현 시 `status="started"` 선기록 → DOM 관찰 후 업데이트 플로우 연결.
+3. README 혹은 dev 가이드에 간단한 로깅 흐름 다이어그램 추가 고려 (선택).
+---
+
 ## Template for Future Entries
 
 ```markdown

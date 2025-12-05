@@ -17,6 +17,7 @@
   - `users(id uuid pk, email unique, created_at)`
   - `licenses_cache(id uuid pk, license_key unique, user_id fk, status, plan, current_period_end, last_synced_at)`
   - `logs(id uuid pk, license_key, created_at, type, payload jsonb; index license_key, created_at)`
+    - MVP 확장 실행 로그는 `type='extension-run'`, `payload` 안에 `status/meta`를 넣는다.
 - RLS: MVP 초기엔 비활성 또는 Edge Function만 접근. 향후 켜면 정책은 역할별 최소권한으로 추가하고 문서화.
 - 변경 시 원칙: 컬럼 추가/삭제는 마이그레이션 + 타입 정의 + 샘플 데이터 동시 업데이트.
 
@@ -39,6 +40,18 @@
 ### 4-3. `extension-log-ingest`
 - `https://<project>.supabase.co/functions/v1/extension-log-ingest`
 - 입력 `licenseKey/type/payload` 검증 → (옵션) 라이선스 active 확인 → `logs` insert → `{ ok: true }` 반환.
+
+#### 로그 스키마/플로우 (DOM 기반 완료 감지 반영)
+- `payload.status`: `started | success | error | timeout`
+- `payload.meta` 필드 예시
+  - `final_goal_text`: COMET `#final-goal` 텍스트
+  - `turns`: `div[role="listitem"].group/goal` 개수 (start~final)
+  - `duration_ms`: 실행 시작→`#final-goal` 첫 등장까지 시간
+  - `timeline_snippet`(옵션): 상위 N개 타임라인 텍스트
+- 플로우
+  1) 실행 버튼 클릭 시 즉시 `status="started"`, `meta.source="extension"`로 insert
+  2) DOM 관찰 결과에 따라 동일 실행의 로그를 업데이트(또는 추가 insert)하여 `status/meta`를 채움
+  3) `final_goal_text`에 실패 키워드(실패/에러/오류/failed) 포함 시 `status=error`; 타임아웃 시 `status=timeout`
 
 ## 5. 코드 스타일 & 구조
 - 위치: `/infra/supabase/functions/<name>/index.ts`.

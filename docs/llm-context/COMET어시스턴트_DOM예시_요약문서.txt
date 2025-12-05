@@ -120,6 +120,13 @@
 
 * 패턴 정리
 
+  * **final-goal 신호**: `div[role="listitem"].group/goal#final-goal` 이 등장하면 실행 완료로 간주하고
+    * `final_goal_text`: 해당 요소 전체 텍스트
+    * `turns`: 첫 goal부터 `#final-goal`까지의 listitem 개수
+    * `duration_ms`: 실행 시작 → `#final-goal` 등장까지 경과 시간
+    * `status`: 기본 `success`, 실패 키워드(실패/에러/오류/failed) 포함 시 `error`, 타임아웃(예: 60초) 시 `timeout`
+  * DOM이 바뀌어 `#final-goal`이 사라지면 “마지막 group/goal 아이템”을 백업 신호로 사용할 수 있으나 현재 버전은 `#final-goal`을 1차 기준으로 한다.
+
   * 각 로그(“goal/step/액션”)은
 
     * `div[role="listitem"].group/goal` 형태의 요소 하나로 표현된다.

@@ -367,6 +367,18 @@ TypeScript strict.
   * 성공/실패 여부
   * (가능하면) COMET와의 대화 턴 수
 
+### DOM 기반 실행 완료 감지
+
+* 실행 버튼 클릭 시점에 `logs`에 `status="started"` 레코드를 먼저 적재한다.
+* 이후 COMET 타임라인 영역의 `div[role="listitem"].group/goal`을 관찰하며, `id="final-goal"` 아이템이 처음 등장하는 순간을 “실행 완료 시점”으로 간주한다.
+* 완료 시 아래 데이터를 업데이트(또는 별도 insert) 한다:
+  * `status`: 기본 `success`; final-goal 텍스트에 "실패/에러/오류/failed" 키워드가 있으면 `error`; 일정 시간(예: 60초) 내 미등장 시 `timeout`
+  * `meta.final_goal_text`: final-goal 요소 내 전체 텍스트
+  * `meta.turns`: 전체 `div[role="listitem"].group/goal` 개수 (최초~final-goal)
+  * `meta.duration_ms`: 실행 시작부터 final-goal 등장까지 경과 시간(ms)
+  * `meta.timeline_snippet`(옵션): 필요 시 상위 N개 타임라인 텍스트
+* 목적: “저비용으로 실행 성공 여부/요약/턴 수를 기록”하기 위한 최소 규칙. 완벽한 분류보다 가벼운 신호 확보가 목표임을 명시한다.
+
 **요구사항**
 
 * `logs` 테이블 구조 예시:
@@ -376,9 +388,9 @@ TypeScript strict.
   * `workflow_id` (FK → workflows.id)
   * `url` (전체 URL)
   * `domain` (hostname)
-  * `status` (`success`, `error` 등)
+  * `status` (`started` | `success` | `error` | `timeout`)
   * `ran_at` (timestamp)
-  * `meta` (JSONB: { turns: number, errorMessage?: string, source: "extension" })
+  * `meta` (JSONB: { turns?: number, duration_ms?: number, final_goal_text?: string, timeline_snippet?: string[] | string, errorMessage?: string, source: "extension" })
 
 * 확장에서 실행 버튼 클릭 시:
 
@@ -387,16 +399,17 @@ TypeScript strict.
     workflow_id,
     url,
     domain,
-    status,
+    status: "started",
     ran_at: new Date().toISOString(),
-    meta: { turns, source: "extension" }
+    meta: { source: "extension" }
   })
   ```
 
-* COMET 로그 구조를 어떻게 받을지에 따라:
+* 이후 DOM 관찰 결과로 `status/meta`를 갱신한다:
 
-  * 턴 수 등은 일단 추정 값으로 넣고,
-  * 추후 DOM/HTML 연동 후 개선 가능.
+  * final-goal 등장 → `status` 기본 `success`, 메타데이터 채우기
+  * 실패 키워드 포함 → `status` `error`
+  * 일정 시간 내 미등장 → `status` `timeout`
 
 ---
 
@@ -440,9 +453,9 @@ TypeScript strict.
    * `workflow_id` (uuid, FK → workflows.id)
    * `url` (text)
    * `domain` (text)
-   * `status` (text) // 'success' | 'error' | 'cancelled'
+   * `status` (text) // 'started' | 'success' | 'error' | 'timeout'
    * `ran_at` (timestamptz, default now())
-   * `meta` (jsonb)
+   * `meta` (jsonb) // { turns?, duration_ms?, final_goal_text?, timeline_snippet?, source: "extension" }
 
 3. `pins` (선택, 나중에 써도 됨) – 즐겨찾기 숏컷
 

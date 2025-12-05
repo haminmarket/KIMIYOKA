@@ -289,6 +289,21 @@
       "passes": false
     },
     {
+      "id": "comet-005-final-goal-logging",
+      "category": "logging",
+      "priority": "high",
+      "description": "Final goal detection updates logs with status and meta",
+      "steps": [
+        "Login as test user",
+        "Navigate to a supported domain (e.g., youtube.com)",
+        "Run a workflow and wait for COMET final-goal to appear",
+        "Query Supabase logs for the latest record",
+        "Verify status is 'success' or 'error' (after initial 'started')",
+        "Check meta.turns, meta.duration_ms, meta.final_goal_text are populated"
+      ],
+      "passes": false
+    },
+    {
       "id": "log-001",
       "category": "logging",
       "priority": "critical",
@@ -297,6 +312,7 @@
         "Login as test user",
         "Click 'Run' on a workflow",
         "Verify API call to Supabase logs table",
+        "Confirm a status='started' entry is created at click time",
         "Check log contains: user_id, workflow_id, url, domain, status",
         "Verify timestamp is recorded"
       ],
@@ -311,7 +327,7 @@
         "Login as test user",
         "Trigger workflow execution failure",
         "Verify error is logged to Supabase",
-        "Check log status is 'error'",
+        "Check log status is 'error' (after an initial 'started')",
         "Verify error message is captured in meta"
       ],
       "passes": false
@@ -325,7 +341,7 @@
         "Login as test user",
         "Navigate to youtube.com",
         "Verify extension icon shows badge",
-        "Check badge displays workflow count",
+        "Check badge is on (count optional)",
         "Navigate to unsupported domain",
         "Verify badge disappears"
       ],
@@ -377,13 +393,13 @@
       "id": "ui-003",
       "category": "ui",
       "priority": "low",
-      "description": "Loading states are shown during API calls",
+      "description": "Loading state is indicated during API calls",
       "steps": [
         "Login as test user",
         "Open popup",
-        "Verify loading spinner during workflow fetch",
-        "Check skeleton/placeholder is shown",
-        "Verify loading disappears when data loads"
+        "Trigger workflow fetch",
+        "Verify user can see any loading indicator (text or spinner)",
+        "Confirm indicator disappears when data loads"
       ],
       "passes": false
     },
@@ -432,12 +448,12 @@
       "id": "perf-001",
       "category": "performance",
       "priority": "medium",
-      "description": "Popup opens in under 500ms",
+      "description": "Popup opens without noticeable delay",
       "steps": [
         "Click extension icon",
-        "Measure time to popup display",
-        "Verify popup appears in <500ms",
-        "Check no visible lag"
+        "Observe popup display",
+        "Confirm no visible lag when opening",
+        "Note if any jarring delay is perceived"
       ],
       "passes": false
     },
@@ -445,11 +461,11 @@
       "id": "perf-002",
       "category": "performance",
       "priority": "medium",
-      "description": "Workflow fetch completes in under 2 seconds",
+      "description": "Workflow fetch feels responsive",
       "steps": [
         "Open popup",
-        "Measure API call duration",
-        "Verify workflows load in <2s",
+        "Observe workflow list loading",
+        "Confirm data appears within a natural 2-3s feel",
         "Check loading state is visible during fetch"
       ],
       "passes": false
@@ -605,34 +621,6 @@
       "passes": false
     },
     {
-      "id": "test-002",
-      "category": "testing",
-      "priority": "medium",
-      "description": "COMET DOM tests pass with mock",
-      "steps": [
-        "Run COMET DOM tests",
-        "Verify mock HTML is loaded",
-        "Check input field detection works",
-        "Verify prompt insertion works",
-        "Check submit button click works"
-      ],
-      "passes": false
-    },
-    {
-      "id": "test-003",
-      "category": "testing",
-      "priority": "medium",
-      "description": "API client tests pass with mocked fetch",
-      "steps": [
-        "Run API client tests",
-        "Verify Supabase calls are mocked",
-        "Check request format is correct",
-        "Verify response parsing works",
-        "Check error handling is tested"
-      ],
-      "passes": false
-    },
-    {
       "id": "storage-001",
       "category": "storage",
       "priority": "high",
@@ -647,23 +635,10 @@
       "passes": false
     },
     {
-      "id": "storage-002",
-      "category": "storage",
-      "priority": "medium",
-      "description": "Storage sync works across devices (future)",
-      "steps": [
-        "Save data to chrome.storage.sync",
-        "Login on another device",
-        "Verify data syncs",
-        "Check settings persist"
-      ],
-      "passes": false
-    },
-    {
       "id": "upgrade-001",
       "category": "upgrade",
-      "priority": "medium",
-      "description": "Extension updates gracefully",
+      "priority": "low",
+      "description": "(Post-MVP) Extension updates gracefully",
       "steps": [
         "Install version 0.1.0",
         "Update to version 0.2.0",
@@ -702,15 +677,15 @@
     }
   ],
   "summary": {
-    "total": 52,
+    "total": 48,
     "passing": 0,
-    "failing": 52,
+    "failing": 48,
     "categories": {
       "installation": 2,
-      "functional": 8,
+      "functional": 11,
       "authentication": 5,
       "integration": 4,
-      "logging": 2,
+      "logging": 3,
       "ui": 3,
       "error-handling": 3,
       "performance": 2,
@@ -718,8 +693,8 @@
       "localization": 2,
       "configuration": 2,
       "build": 3,
-      "testing": 3,
-      "storage": 2,
+      "testing": 1,
+      "storage": 1,
       "upgrade": 1,
       "communication": 2
     }

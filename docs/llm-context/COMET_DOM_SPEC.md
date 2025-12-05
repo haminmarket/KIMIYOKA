@@ -178,6 +178,17 @@ const getTimelineItems = (): string[] => {
 }
 ```
 
+### Final Goal Detection (Execution Completion)
+
+* Primary marker: `div[role="listitem"].group/goal#final-goal`.
+* Semantics: treated as the **last timeline item summarizing the run**. When it first appears, the extension marks the execution complete.
+* Data captured on appearance:
+  * `final_goal_text`: full text content of `#final-goal`
+  * `turns`: total count of `div[role="listitem"].group/goal` items from start through `#final-goal`
+  * `duration_ms`: elapsed time from execution start until `#final-goal` first renders
+  * `status`: `success` by default; if `final_goal_text` contains failure keywords ("실패", "에러", "오류", "failed"), set `error`; if `#final-goal` never appears within timeout (e.g., 60s), set `timeout`
+* Fallback: if future DOM changes remove `#final-goal`, use the **last** `div[role="listitem"].group/goal` as a backup signal, but current version prioritizes `#final-goal`.
+
 ---
 
 ## 5. Complete Integration Example
