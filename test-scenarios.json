@@ -314,6 +314,7 @@
         "Verify API call to Supabase logs table",
         "Confirm a status='started' entry is created at click time",
         "Check log contains: user_id, workflow_id, url, domain, status",
+        "Confirm direct logs insert/update (no Edge Function in MVP)",
         "Verify timestamp is recorded"
       ],
       "passes": false

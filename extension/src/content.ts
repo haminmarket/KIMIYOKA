@@ -18,6 +18,7 @@ function observeFinalGoal(logId?: string, startedAt?: number) {
   const finalize = (status: 'success' | 'error' | 'timeout', meta: any) => {
     clearTimeout(timeoutId)
     chrome.runtime.sendMessage({ type: 'FINAL_GOAL', logId, status, meta }).catch(() => {})
+    chrome.runtime.sendMessage({ type: 'RUN_RESULT', status, meta }).catch(() => {})
     observer.disconnect()
   }
 

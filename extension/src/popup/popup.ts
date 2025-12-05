@@ -192,6 +192,17 @@ document.getElementById('open-options')?.addEventListener('click', () => {
   chrome.runtime.openOptionsPage()
 })
 
+// Listen for run results (timeout/error) to notify user
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.type === 'RUN_RESULT') {
+    if (message.status === 'timeout') {
+      alert('Workflow timed out (no final result within 60s).')
+    } else if (message.status === 'error') {
+      alert(`Workflow error: ${message.meta?.errorMessage || 'unknown error'}`)
+    }
+  }
+})
+
 // Initialize popup
 displayCurrentDomain()
 loadWorkflows()

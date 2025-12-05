@@ -108,6 +108,9 @@ pnpm test:coverage
 - **Frontend**: TypeScript, Vanilla JS/HTML/CSS (No React)
 - **Extension**: Chrome Manifest V3
 - **Backend**: Supabase (Auth, Database, Edge Functions)
+
+> MVP 정책: logs 기록은 Edge Function 없이 `supabase.from('logs')` insert/update로 처리(RLS 보호). 라이선스/웹훅 Edge Function은 Phase 2 이후 도입.
+> 크롬 확장에는 anon 키만 사용하고 service role/Edge Function 호출을 넣지 않는다.
 - **Build**: Vite
 - **Test**: Vitest, jsdom
 - **Package Manager**: pnpm

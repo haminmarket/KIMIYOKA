@@ -108,6 +108,7 @@ Request: {
 - Auth: Supabase email/password
 - Plans: Manual assignment in `users.plan`
 - No license keys
+- Logs: Edge Function 사용 안 함. 클라이언트에서 `supabase.from('logs')` insert/update (RLS 보호)로 기록.
 
 **Phase 2 (LemonSqueezy Integration)**:
 - Auth: Still Supabase (no change)

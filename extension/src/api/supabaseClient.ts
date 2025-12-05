@@ -21,6 +21,8 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   }
 })
 
+// MVP 정책: logs 기록은 Edge Function 대신 direct table insert/update로 처리 (RLS 보호)
+
 /** Fetch workflows for a domain (auth required) */
 export async function fetchWorkflows(domain: string) {
   const { data, error } = await supabase

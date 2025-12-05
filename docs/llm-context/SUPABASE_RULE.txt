@@ -9,6 +9,8 @@
 
 > **스키마 동결 규칙 (MVP)**: 현재 Supabase 스키마(users/workflows/logs)는 MVP 기준으로 동결 상태이다. 스키마 변경(마이그레이션)은 AUTH_FLOW_DECISION, PRD, COMET_DOM_SPEC 등 상위 문서가 먼저 업데이트된 뒤에만 수행한다. 단순 로깅 형태 변화는 `logs.meta` JSONB 안에서 해결하고, 새로운 컬럼 추가는 지양한다.
 
+> **Edge Function 사용 범위 (MVP)**: 1년 MVP 기간 동안 logs 작성은 Edge Function을 거치지 않고 클라이언트에서 `supabase.from('logs')` insert/update로 처리한다(RLS로 보호). 라이선스/웹훅 등 Edge Function은 AUTH_FLOW_DECISION/SUPABASE_RULE에 정의된 Phase 2 시점에서만 도입한다.
+
 ## 2. 기술 스택/제한
 - Postgres(SQL 마이그레이션), Edge Functions(Deno + TS). 외부 백엔드 프레임워크 금지(최소 1년).
 - 각 Edge Function은 한 가지 역할만 수행하고 작게 유지한다.
