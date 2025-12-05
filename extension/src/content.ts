@@ -3,7 +3,7 @@
  * Runs on all web pages to detect COMET and inject prompts
  */
 
-console.log('COMET Shortcuts: Content script loaded')
+console.log('[COMET-EXT] content.js loaded', window.location.href, 'top?', window.top === window)
 
 import { cometDom } from '@/core/cometDom'
 
