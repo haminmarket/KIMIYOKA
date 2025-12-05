@@ -5,7 +5,7 @@
 
 console.log('COMET Shortcuts: Popup loaded')
 
-import { fetchWorkflows } from '@/api/supabaseClient'
+import { fetchWorkflows, insertStartedLog, supabase, updateLogStatus } from '@/api/supabaseClient'
 import { Workflow } from '@/api/types'
 import { extractDomain } from '@/utils/domainExtractor'
 
@@ -16,6 +16,16 @@ async function getCurrentTab() {
 }
 
 // Display current domain
+let currentDomain: string | null = null
+let currentTabUrl: string | null = null
+let currentWorkflows: Workflow[] = []
+let currentLogId: string | null = null
+
+async function getSessionUser() {
+  const { data } = await supabase.auth.getSession()
+  return data.session?.user || null
+}
+
 async function displayCurrentDomain() {
   const tab = await getCurrentTab()
   const domainElement = document.getElementById('current-domain')
@@ -23,6 +33,8 @@ async function displayCurrentDomain() {
   if (domainElement && tab.url) {
     const domain = extractDomain(tab.url) || 'unknown'
     domainElement.textContent = domain
+    currentDomain = domain
+    currentTabUrl = tab.url
   }
 }
 
@@ -33,6 +45,12 @@ async function loadWorkflows() {
 
   container.innerHTML = '<p class="placeholder">Loading workflows...</p>'
 
+  const user = await getSessionUser()
+  if (!user) {
+    container.innerHTML = '<p class="placeholder">Please log in from Options</p>'
+    return
+  }
+
   const tab = await getCurrentTab()
   const domain = tab.url ? extractDomain(tab.url) : null
   if (!domain) {
@@ -42,6 +60,7 @@ async function loadWorkflows() {
 
   try {
     const workflows = await fetchWorkflows(domain)
+    currentWorkflows = workflows
     renderWorkflows(container, workflows)
   } catch (err) {
     console.error('Failed to load workflows', err)
@@ -73,26 +92,58 @@ function renderWorkflows(container: HTMLElement, workflows: Workflow[]) {
   container.querySelectorAll<HTMLButtonElement>('.run-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const workflowId = btn.dataset.wid
-      const prompt = workflows.find(w => w.id === workflowId)?.prompt || ''
-      runWorkflow(prompt)
+      const wf = workflows.find(w => w.id === workflowId)
+      if (!wf) return
+      runWorkflow(wf)
     })
   })
 }
 
-async function runWorkflow(prompt: string) {
+async function runWorkflow(workflow: Workflow) {
   const tab = await getCurrentTab()
   if (!tab.id) return
 
-  chrome.tabs.sendMessage(tab.id, { type: 'RUN_WORKFLOW', prompt }, (resp) => {
+  const user = await getSessionUser()
+  if (!user) {
+    alert('Please log in from Options first')
+    return
+  }
+
+  try {
+    const logId = await insertStartedLog({
+      userId: user.id,
+      workflowId: workflow.id,
+      url: currentTabUrl || tab.url || '',
+      domain: currentDomain || extractDomain(tab.url || '') || ''
+    })
+    currentLogId = logId
+  } catch (err) {
+    console.error('Failed to log started', err)
+  }
+
+  chrome.tabs.sendMessage(tab.id, { type: 'RUN_WORKFLOW', prompt: workflow.prompt }, async (resp) => {
     if (chrome.runtime.lastError) {
       console.error('Message failed', chrome.runtime.lastError)
       alert('Failed to reach content script (is COMET tab loaded?)')
+      await updateLogStatusSafe('error', { errorMessage: 'content script not reachable' })
       return
     }
     if (!resp?.success) {
       alert(resp?.error || 'Failed to run workflow')
+      await updateLogStatusSafe('error', { errorMessage: resp?.error || 'run failed' })
+      return
     }
+    await updateLogStatusSafe('success', { source: 'extension' })
   })
+}
+
+async function updateLogStatusSafe(status: 'success' | 'error', meta: any) {
+  if (!currentLogId) return
+  try {
+    await updateLogStatus(currentLogId, status, meta)
+  } catch (err) {
+    console.error('Failed to update log status', err)
+  }
 }
 
 // Handle settings button click

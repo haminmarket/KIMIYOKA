@@ -18,7 +18,7 @@ chrome.runtime.onInstalled.addListener(details => {
 // Listen for messages from popup/content scripts
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   console.log('Background received message:', message)
-  // TODO: Handle different message types
+  // Placeholder: simply ack
   sendResponse({ success: true })
   return true // Keep message channel open for async response
 })
